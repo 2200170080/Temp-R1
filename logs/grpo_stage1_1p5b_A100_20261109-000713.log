@@ -272,3 +272,5 @@
 [36m(WorkerDict pid=3440428)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/_state_dict_utils.py:716: UserWarning: When using ``NO_SHARD`` for ``ShardingStrategy``, full_state_dict willbe returned.
 [36m(WorkerDict pid=3440428)[0m   warnings.warn(
 [36m(main_task pid=3440152)[0m [WARNING] OBSERVATION TOO LONG, CONSIDER CHANGING YOUR CONFIG, 1417 & 1400
+[36m(main_task pid=3440152)[0m [WARNING] OBSERVATION TOO LONG, CONSIDER CHANGING YOUR CONFIG, 1436 & 1400
+[36m(main_task pid=3440152)[0m ACTIVE_TRAJ_NUM: [300, 300, 247, 38, 22]
