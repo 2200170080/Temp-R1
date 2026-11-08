@@ -760,3 +760,8 @@ Training completed. Do not forget to share your model on huggingface.co/models =
   train_runtime            = 0:49:58.65
   train_samples_per_second =      0.667
   train_steps_per_second   =      0.033
+Figure saved at: saves/qwen2.5-1.5b-it/full/sft/training_loss.png
+[WARNING|2026-11-08 13:36:20] llamafactory.extras.ploting:148 >> No metric eval_loss to plot.
+[WARNING|2026-11-08 13:36:20] llamafactory.extras.ploting:148 >> No metric eval_accuracy to plot.
+[INFO|modelcard.py:449] 2026-11-08 13:36:20,638 >> Dropping the following result as it does not have all the necessary fields:
+{'task': {'name': 'Causal Language Modeling', 'type': 'text-generation'}}
