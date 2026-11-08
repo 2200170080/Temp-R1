@@ -13,7 +13,7 @@ AUTHOR_NAME="${AUTHOR_NAME:-Temp-R1 Autosync}"
 AUTHOR_EMAIL="${AUTHOR_EMAIL:-autosync@localhost}"
 
 cd "$ROOT" || { echo "ROOT 不存在: $ROOT"; exit 1; }
-export GIT_SSH_COMMAND="ssh -i $KEY -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15"
+export GIT_SSH_COMMAND="ssh -F /dev/null -i $KEY -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15"
 
 log() { echo "$(date '+%F %T') $*"; }
 log "autosync 启动 root=$ROOT remote=$REMOTE branch=$BRANCH interval=${INTERVAL}s max=${MAX_MB}MB"
