@@ -5,7 +5,7 @@
 /data/MultiTQ/train_MULTITQ.json
 /data/MultiTQ/oversampled_for_sft.json
 /data/MultiTQ/oversampled_for_sft.stats.json
-/outputs/
+# /outputs/ 已纳入跟踪（SFT 轨迹等小体积产物）
 *.log
 __pycache__/
 *.pyc
