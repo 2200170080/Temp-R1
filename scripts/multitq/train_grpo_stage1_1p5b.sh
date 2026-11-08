@@ -45,6 +45,7 @@ else:
 PY
 
 python -m verl.trainer.main_ppo_format \
+    "hydra.run.dir=logs/grpo_runs/$EXPERIMENT_NAME" \
     data.train_files=data/multitq_search2/train_multiple.parquet \
     data.val_files=data/multitq_search2/test_multiple.parquet \
     data.train_data_num=null \

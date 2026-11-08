@@ -1,12 +1,18 @@
 <!-- tempr1-local-navigation -->
-## 本机复现导航
+## 当前 1.5B 复现入口
 
-- [目录说明](docs/PROJECT_LAYOUT.md)
-- [部署记录（待实测核验）](docs/Temp-R1_部署手册.md)
-- [环境快照](docs/environment/)
-- [GitHub 同步说明](docs/GitHub同步说明.md)
+- [目录与产物说明](docs/PROJECT_LAYOUT.md)
+- [历史部署记录](docs/Temp-R1_部署手册.md)
+- [环境快照](docs/environment/) · [GitHub 同步说明](docs/GitHub同步说明.md)
+- SFT：`scripts/multitq/train_sft_qwen_1p5b.sh`
+- GRPO Stage1：`scripts/multitq/train_grpo_stage1_1p5b.sh`
+- GRPO 两步测试：`scripts/multitq/train_grpo_stage1_1p5b_smoke.sh`
 
-下方保留上游项目说明；本机 1.5B 训练配置尚待验证。
+当前状态（2026-11-08）：正式 SFT 已完成，GRPO 两步测试通过；
+正式 GRPO Stage1 第一步反向传播显存不足，现按用户要求暂停，尚未完成。
+训练继续使用已有 `tempr1` 环境；现有检索服务保持原部署。
+下方为上游原说明，其中多卡训练入口、环境和模型设置需按本机配置核对。
+Stage2 与正式评测尚未完成；目录整理不会启动训练。
 
 <!-- /tempr1-local-navigation -->
 

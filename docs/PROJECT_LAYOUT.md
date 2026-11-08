@@ -1,31 +1,72 @@
-# Temp-R1 目录说明
+# Temp-R1 目录与产物说明
+
+## 当前进度
+
+正式 Qwen2.5-1.5B SFT 已完成，GRPO 两步测试通过。
+正式 Stage1 在第一步反向传播时显存不足，现已暂停；Stage2 和正式评测尚未完成。
+本次整理只处理目录和旧产物，不改变训练参数、模型权重或现有检索服务。
 
 ## 常用入口
 
-- [部署记录](Temp-R1_部署手册.md)：保留历史内容；其中环境和训练结论需逐项实测核验。
-- [GitHub 同步说明](GitHub同步说明.md)：服务器向 GitHub 的同步方式。
-- `environment/`：已有环境快照，供排查依赖版本使用。
+| 用途 | 路径 |
+|---|---|
+| 1.5B SFT | `scripts/multitq/train_sft_qwen_1p5b.sh` |
+| 1.5B GRPO Stage1 | `scripts/multitq/train_grpo_stage1_1p5b.sh` |
+| 1.5B GRPO 两步测试 | `scripts/multitq/train_grpo_stage1_1p5b_smoke.sh` |
+| 已安装的 GRPO 显存补丁工具 | `scripts/maintenance/fix_grpo_response_logits.py` |
+| 本次整理工具（默认预览） | `scripts/maintenance/cleanup_tempr1.py` |
+| 目录整理旧工具 | `scripts/maintenance/organize_tempr1.py` |
+| 检索服务 | `retrieval_launch.sh` |
+| GitHub 自动同步 | `scripts/github-sync/autosync.sh` |
+
+上述训练入口仅作定位。本次不运行训练；原作者其他脚本继续保留供参考。
 
 ## 目录职责
 
-| 路径 | 内容 |
-|---|---|
-| `scripts/` | 数据处理、训练、评测与同步入口 |
-| `LLaMA-Factory/` | SFT 框架源码与其配置；保留 editable 安装位置 |
-| `verl/` | GRPO 框架源码 |
-| `search_r1/` | 检索与交互式生成源码 |
-| `data/` | MultiTQ、TimelineKGQA 及加工后的训练/评测输入 |
-| `corpus/` | 知识图谱语料和检索索引 |
-| `outputs/` | 已有 SFT 轨迹，已纳入 Git 跟踪 |
-| `logs/` | 已结束的建索引日志；后续新日志应写入此目录 |
-| `LLaMA-Factory/saves/` | SFT 模型产物的现有约定位置 |
-| `verl_checkpoints/` | GRPO 模型产物的现有约定位置 |
-| `docs/` | 部署、同步、目录说明与环境记录 |
-| `assets/` | 原论文的说明图片 |
+```text
+Temp-R1/
+├── scripts/                 数据处理、按数据集训练/评测、维护及同步工具
+│   ├── multitq/             MultiTQ 入口，包括当前 1.5B 配置
+│   ├── timelinekgqa/        原作者 TimelineKGQA 入口
+│   ├── data_process/        数据、轨迹筛选与转换
+│   ├── maintenance/         整理与修复工具
+│   └── github-sync/         同步脚本及其活动日志
+├── docs/                    部署记录、目录说明、同步说明、环境快照
+├── logs/                    SFT、GRPO、检索构建及预检日志
+│   └── grpo_runs/           Hydra 运行配置；旧记录按日期保存
+├── outputs/                 作者提供的 GPT 轨迹和 SFT 中间数据
+├── data/                    原始数据、分类数据及 GRPO parquet
+├── corpus/                  知识图谱语料及 kg_index 检索索引
+├── LLaMA-Factory/           SFT 框架、配置及正式 SFT 权重
+├── verl/                    GRPO 框架，保留已验证的源码修复
+├── search_r1/               检索与交互生成源码
+├── verl_checkpoints/        后续正式 GRPO 权重的约定位置
+└── assets/                  论文说明图片
+```
 
-`retrieval.log` 当前保留在项目根目录：检索进程正在写入，整理不干预服务。
-`scripts/github-sync/autosync.log` 保留原路径，保持同步器的日志约定。
+保留 editable 安装的框架目录位置。正式权重和数据不为美化目录而搬迁。
+检索服务正在使用的 `retrieval.log` 与同步器的
+`scripts/github-sync/autosync.log` 继续保留原位。
 
-索引、parquet、原始训练集、SFT 轨迹、模型权重和安装元数据都不是待删垃圾。
-`__pycache__` 与 `.pyc` 属可再生文件，本次保留并通过 Git 忽略规则隐藏。
-本次仅整理目录与说明，不代表部署问题或 1.5B 训练配置已经修复。
+## 保留与清理边界
+
+- 保留最终 SFT：`LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft/`
+  中的独立权重、config、tokenizer、训练结果及 loss 图。
+- 删除范围仅为已列明的 `checkpoint-50/`、`checkpoint-100/`、
+  `sft-smoke-20261108-114928/` 和
+  `qwen1p5b-stage1-smoke-20261108-150209/`。
+  删除前检查最终 SFT 的配置、tokenizer 和 safetensors 文件结构。
+- 删除旧 SFT 检查点也会删除其中的优化器状态，不能再从第 50/100 步精确续训；
+  独立最终 SFT 权重继续用于后续 GRPO 和推理。
+- 保留所有未明确列入删除清单的模型目录，尤其正式 GRPO 的 `actor/global_step_*`。
+- 保留作者轨迹、原始/加工数据、索引、关键成功/失败日志、安装元数据和缓存。
+- 旧 Hydra 运行配置从 `outputs/2026-11-08/` 移入
+  `logs/grpo_runs/2026-11-08/`；当前 1.5B GRPO 入口的新配置也写到
+  `logs/grpo_runs/<experiment_name>/`。
+
+## 整理后的检查
+
+整理工具默认仅输出计划；`--apply` 会执行已列明的本机操作。
+应先暂停本项目的 GitHub `sync` 会话；工具遇到仍在运行的训练或同步进程会停止。
+完成后核对 `git diff --stat`、最终 SFT 和检索服务，再恢复同步。
+本次操作不会提交、推送或启动实验。

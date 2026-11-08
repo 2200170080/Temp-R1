@@ -331,8 +331,17 @@ def check_hydra_directory(path):
             raise RuntimeError("outputs 日期目录有非预期内容，保留并停止: " + str(run))
         files = {item.relative_to(run).as_posix() for item in run.rglob("*") if item.is_file()}
         expected = {".hydra/config.yaml", ".hydra/hydra.yaml", ".hydra/overrides.yaml"}
-        if files != expected:
-            raise RuntimeError("运行目录不只是已知 Hydra 配置，保留并停止: " + str(run))
+        # Hydra 默认还会创建该日志；旧 Git 忽略规则使其未出现在远端文件树。
+        optional = {"main_ppo_format.log"}
+        missing = expected - files
+        extra = files - expected - optional
+        if missing or extra:
+            raise RuntimeError(
+                "运行目录有未识别内容或缺少配置，保留并停止: {}\n缺少: {}\n额外: {}".format(
+                    run, ", ".join(sorted(missing)) or "无",
+                    ", ".join(sorted(extra)) or "无",
+                )
+            )
 
 
 def add_write(plan, relative, content):

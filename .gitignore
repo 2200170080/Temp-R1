@@ -20,3 +20,9 @@ __pycache__/
 /wandb/
 /runs/
 .env.*
+
+# Hydra configs live in logs/grpo_runs; legacy dated outputs are runtime files
+/outputs/20??-??-??/
+!/logs/
+!/logs/grpo_runs/
+!/logs/grpo_runs/**
