@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+cd "$HOME/Temp-R1" || exit
+
 export CUDA_VISIBLE_DEVICES=0
 file_path=corpus
 #index_file=$file_path/timequestions_kg_index/e5_Flat.index

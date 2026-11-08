@@ -8,7 +8,6 @@
 *.log
 !/logs/
 !/logs/*.log
-!/retrieval.log
 __pycache__/
 *.pyc
 .env

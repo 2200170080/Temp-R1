@@ -41,7 +41,7 @@ LAYOUT = """# Temp-R1 目录说明
 | `docs/` | 部署、同步、目录说明与环境记录 |
 | `assets/` | 原论文的说明图片 |
 
-`retrieval.log` 当前保留在项目根目录：检索进程正在写入，整理不干预服务。
+`logs/retrieval.log` 是检索服务的活动日志，整理不干预服务。
 `scripts/github-sync/autosync.log` 保留原路径，保持同步器的日志约定。
 
 索引、parquet、原始训练集、SFT 轨迹、模型权重和安装元数据都不是待删垃圾。
@@ -275,7 +275,7 @@ def main():
         print("移动：", item["src"], "->", item["dst"])
     for path in edits:
         print("更新：", path)
-    print("保留：retrieval.log、数据/索引/轨迹、框架源码、安装元数据及 Python 缓存。")
+    print("保留：logs/retrieval.log、数据/索引/轨迹、框架源码、安装元数据及 Python 缓存。")
     if args.apply:
         if not moves and not edits:
             print("已经整理，无需重复修改。")

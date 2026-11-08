@@ -89,7 +89,7 @@ LAYOUT = """# Temp-R1 目录与产物说明
 | 已安装的 GRPO 显存补丁工具 | \x60scripts/maintenance/fix_grpo_response_logits.py\x60 |
 | 本次整理工具（默认预览） | \x60scripts/maintenance/cleanup_tempr1.py\x60 |
 | 目录整理旧工具 | \x60scripts/maintenance/organize_tempr1.py\x60 |
-| 检索服务 | \x60retrieval_launch.sh\x60 |
+| 检索服务 | \x60scripts/retrieval/retrieval_launch.sh\x60 |
 | GitHub 自动同步 | \x60scripts/github-sync/autosync.sh\x60 |
 
 上述训练入口仅作定位。本次不运行训练；原作者其他脚本继续保留供参考。
@@ -118,7 +118,7 @@ Temp-R1/
 \x60\x60\x60
 
 保留 editable 安装的框架目录位置。正式权重和数据不为美化目录而搬迁。
-检索服务正在使用的 \x60retrieval.log\x60 与同步器的
+检索服务正在使用的 \x60logs/retrieval.log\x60 与同步器的
 \x60scripts/github-sync/autosync.log\x60 继续保留原位。
 
 ## 保留与清理边界

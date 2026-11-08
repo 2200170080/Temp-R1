@@ -124,7 +124,7 @@ bash search_r1/search/build_index.sh
 ### (2) Launch a local retrieval server.
 ```bash
 conda activate retriever
-bash retrieval_launch.sh
+bash scripts/retrieval/retrieval_launch.sh
 ```
 ### (3) Prepare for SFT training data.
 ```bash 
@@ -156,7 +156,7 @@ bash scripts/multitq/train_grpo_stage2.sh
 ### (1) Launch a local retrieval server.
 ```bash
 conda activate retriever
-bash retrieval_launch.sh
+bash scripts/retrieval/retrieval_launch.sh
 ```
 ### (2) Run inference.
 ```bash

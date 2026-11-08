@@ -378,15 +378,15 @@ cd ~/Temp-R1/search_r1/search
 
 ```bash
 cd ~/Temp-R1
-nohup bash retrieval_launch.sh > ~/Temp-R1/retrieval.log 2>&1 &
+nohup bash scripts/retrieval/retrieval_launch.sh > ~/Temp-R1/logs/retrieval.log 2>&1 &
 sleep 20
-tail -5 ~/Temp-R1/retrieval.log
+tail -5 ~/Temp-R1/logs/retrieval.log
 curl -s -X POST http://127.0.0.1:8000/retrieve -H "Content-Type: application/json" -d '{"queries":["Who was the last person to visit China before the University of Stellenbosch?"],"topk":3,"return_scores":true}' | head -c 400
 ```
 | # | 命令 | 作用 | 成功判据 |
 |---|---|---|---|
-| 1 | `nohup bash retrieval_launch.sh &` | 服务常驻；SFT 轨迹生成与 GRPO 每次 `<search>` 都依赖它，断了训练就卡 | 进程在 |
-| 2 | `tail -5 retrieval.log` | 看是否成功加载 1.4 G 索引 | 含 `Uvicorn running on http://0.0.0.0:8000` |
+| 1 | `nohup bash scripts/retrieval/retrieval_launch.sh &` | 服务常驻；SFT 轨迹生成与 GRPO 每次 `<search>` 都依赖它，断了训练就卡 | 进程在 |
+| 2 | `tail -5 logs/retrieval.log` | 看是否成功加载 1.4 G 索引 | 含 `Uvicorn running on http://0.0.0.0:8000` |
 | 3 | `curl ... /retrieve` | 用论文 Figure 2 的原题探活，验证索引与语料对齐 | 返回 `Stellenbosch_University` 相关三元组 |
 
 ### 本节验收
