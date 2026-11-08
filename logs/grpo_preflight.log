@@ -1,0 +1,6 @@
+SFT权重可读，张量数： 338
+SFT tokenizer和对话模板可用
+train_multiple 样本数： 103305
+test_multiple 样本数： 15720
+检索服务正常
+GRPO_PREFLIGHT_OK
