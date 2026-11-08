@@ -10,3 +10,8 @@ INFO:     127.0.0.1:48618 - "POST /retrieve HTTP/1.1" 200 OK
 INFO:     127.0.0.1:48054 - "POST /retrieve HTTP/1.1" 200 OK
 INFO:     127.0.0.1:58166 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:54134 - "POST /retrieve HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3438035]
+Terminated
