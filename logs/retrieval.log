@@ -117,3 +117,4 @@ INFO:     127.0.0.1:59820 - "POST /retrieve HTTP/1.1" 422 Unprocessable Entity
 INFO:     127.0.0.1:60306 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:48946 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:41000 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36470 - "GET /metrics HTTP/1.1" 404 Not Found
