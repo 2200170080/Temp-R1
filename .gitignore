@@ -11,3 +11,11 @@ __pycache__/
 *.pyc
 .env
 
+# Local installation metadata and experiment artifacts
+*.egg-info/
+/logs/
+/verl_checkpoints/
+/LLaMA-Factory/saves/
+/wandb/
+/runs/
+.env.*

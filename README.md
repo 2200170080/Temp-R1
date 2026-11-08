@@ -1,3 +1,15 @@
+<!-- tempr1-local-navigation -->
+## 本机复现导航
+
+- [目录说明](docs/PROJECT_LAYOUT.md)
+- [部署记录（待实测核验）](docs/Temp-R1_部署手册.md)
+- [环境快照](docs/environment/)
+- [GitHub 同步说明](docs/GitHub同步说明.md)
+
+下方保留上游项目说明；本机 1.5B 训练配置尚待验证。
+
+<!-- /tempr1-local-navigation -->
+
 # Temp-R1: A Unified Autonomous Agent for Complex Temporal KGQA via Reverse Curriculum Reinforcement Learning
 
 [![Paper](https://img.shields.io/badge/Paper-ACL2026-blue.svg)]((https://arxiv.org/abs/2601.18296))

@@ -66,7 +66,7 @@ git ls-remote backup refs/heads/main
 - `corpus/kg_index/`（约 2.8 G，FAISS 索引与 embedding memmap）
 - `data/multitq_search2/`（约 499 M，GRPO 用的 6 个 parquet）
 - `data/MultiTQ/train*.json`（各 131 M，超过 GitHub 单文件硬限）
-- `data/MultiTQ/oversampled_for_sft*.json`、`outputs/`、`*.log`、`__pycache__/`、`*.pyc`
+- `data/MultiTQ/oversampled_for_sft*.json`、`*.log`、`__pycache__/`、`*.pyc`
 
 模型权重、vLLM 缓存等大对象也都不在仓库内。
 
@@ -76,3 +76,5 @@ git ls-remote backup refs/heads/main
 2. **不自动处理分歧**。若在网页或另一台机器改了同一分支，下一轮 push 会 non-fast-forward 失败并持续重试；需要先停同步器，`git fetch backup main` 后人工核对合并。
 3. **工作区共享**。`/root/user/...` 可能是共享盘，同一工作区只能有一节点运行同步器，否则会争抢 `.git/index.lock`。
 4. **历史是重建的单条初始提交**。原克隆为 `--depth 1` 浅仓库，浅仓库不允许推送，因此用 `--orphan` 建了干净历史；上游 commit 记录不在本仓库内，需要对比时通过 `origin` 拉取。
+
+注：`outputs/` 中已有 SFT 轨迹已纳入 Git 跟踪；日志及模型产物按 `.gitignore` 排除。
