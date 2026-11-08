@@ -3,17 +3,18 @@
 /data/multitq_search2/
 /data/MultiTQ/train.json
 /data/MultiTQ/train_MULTITQ.json
-/data/MultiTQ/oversampled_for_sft.json
-/data/MultiTQ/oversampled_for_sft.stats.json
 # /outputs/ 已纳入跟踪（SFT 轨迹等小体积产物）
+# data/MultiTQ/oversampled_for_sft*.json 已纳入跟踪（0.6 MB，SFT 冷启动的直接输入）
 *.log
+!/logs/
+!/logs/*.log
+!/retrieval.log
 __pycache__/
 *.pyc
 .env
 
 # Local installation metadata and experiment artifacts
 *.egg-info/
-/logs/
 /verl_checkpoints/
 /LLaMA-Factory/saves/
 /wandb/

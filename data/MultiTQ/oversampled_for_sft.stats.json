@@ -1,0 +1,36 @@
+{
+  "total_samples": 1885,
+  "target_correct_per_type": 100,
+  "qtypes": {
+    "equal": {
+      "sampled": 216,
+      "expected_accuracy": 0.6,
+      "expected_correct": 129
+    },
+    "before_last": {
+      "sampled": 433,
+      "expected_accuracy": 0.3,
+      "expected_correct": 129
+    },
+    "before_after": {
+      "sampled": 185,
+      "expected_accuracy": 0.7,
+      "expected_correct": 129
+    },
+    "first_last": {
+      "sampled": 185,
+      "expected_accuracy": 0.7,
+      "expected_correct": 129
+    },
+    "after_first": {
+      "sampled": 433,
+      "expected_accuracy": 0.3,
+      "expected_correct": 129
+    },
+    "equal_multi": {
+      "sampled": 433,
+      "expected_accuracy": 0.4,
+      "expected_correct": 173
+    }
+  }
+}
