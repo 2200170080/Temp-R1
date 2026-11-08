@@ -35,6 +35,7 @@
 | 10 | 评测 Base / SFT / GRPO 三档 | 三组 accuracy | 每档 20–40 min |
 | 11 | 常见错误对照 | 无 | 按需 |
 | 12 | tmux 速查与换机器 | 无 | 按需 |
+| 13 | GitHub 自动同步 | 仓库已推送，同步器常驻 | 5 min（首次推送） |
 
 ### 0.3 三条贯穿全程的约定
 
@@ -659,6 +660,185 @@ tmux ls ; pgrep -af main_ppo | head -3 ; tail -20 ~/Temp-R1/logs/stage1.log
 | `tmux ls` | 列出正在跑的会话 |
 | `pgrep -af retrieval_server` | 检索服务仍在（换机器后需重启） |
 
+## 13. GitHub 自动同步（服务器 → GitHub）
+
+服务器上的改动每 60 秒自动提交并推到 `2200170080/Temp-R1`。方向是**单向**：只推不拉，脚本不会从 GitHub 拉取、合并或检出任何文件。在网页或另一台机器改同一分支会让下一轮 push 报 non-fast-forward，处理见 13.9。
+
+### 13.1 既有事实
+
+| 项 | 值 |
+|---|---|
+| 目标仓库 | `https://github.com/2200170080/Temp-R1`，默认分支 `main` |
+| remote 名 | `backup`；`origin` 仍指上游 `zjukg/Temp-R1`，只作只读参考 |
+| 部署密钥 | `~/.ssh/github_tempr1`，仓库级，已勾选 Allow write access |
+| 同步脚本 | `~/Temp-R1/scripts/github-sync/autosync.sh` |
+| 同步日志 | `~/Temp-R1/scripts/github-sync/autosync.log`（已被 Git 忽略，不入库） |
+| 常驻会话 | tmux `sync` |
+| 实测提交历史 | 单条初始提交 + 自动提交；打包体积 220.57 MiB（原始 738 MB） |
+| 实测同步延迟 | 改动落盘后 ≤60 s 提交，推送再需 5–10 s |
+
+### 13.2 一次性配置：生成并登记部署密钥
+
+```bash
+if [ ! -e "$HOME/.ssh/github_tempr1" ] && [ ! -e "$HOME/.ssh/github_tempr1.pub" ]; then ssh-keygen -q -t ed25519 -f "$HOME/.ssh/github_tempr1" -N '' -C "tempr1-autosync@$(hostname)"; else echo "密钥已存在，复用"; fi
+chmod 600 "$HOME/.ssh/github_tempr1"
+cat "$HOME/.ssh/github_tempr1.pub"
+```
+| # | 命令 | 作用 | 成功判据 |
+|---|---|---|---|
+| 1 | `if [ ! -e ... ]; then ssh-keygen ...` | 只在私钥、公钥都不存在时生成，避免覆盖已有密钥 | 无输出或 `密钥已存在，复用` |
+| 2 | `chmod 600 ~/.ssh/github_tempr1` | 私钥权限收紧，ssh 拒绝使用过宽的私钥 | 权限为 `-rw-------` |
+| 3 | `cat ~/.ssh/github_tempr1.pub` | 显示公钥，供粘到 GitHub | 以 `ssh-ed25519 AAAA` 开头的一整行 |
+
+在浏览器完成登记（**这一步必须用仓库所有者账号，无法由服务器代做**）：
+
+| # | 操作 | 要点 |
+|---|---|---|
+| 1 | 打开 `https://github.com/2200170080/Temp-R1/settings/keys` | 仓库的 Settings → Deploy keys |
+| 2 | 点 `Add deploy key` | Title 填 `tempr1-server` |
+| 3 | Key 粘贴上一步的整行公钥 | 不要带换行或多余空格 |
+| 4 | **勾选 `Allow write access`** | 部署密钥默认只读，不勾则推送必失败 |
+| 5 | 点 `Add deploy key` | 页面出现 `tempr1-server` 记录即成功 |
+
+### 13.3 绑定远端，并绕过全局 ssh 配置
+
+```bash
+cd ~/Temp-R1
+git remote get-url backup >/dev/null 2>&1 || git remote add backup git@github.com:2200170080/Temp-R1.git
+git config --local core.sshCommand "ssh -F /dev/null -i $HOME/.ssh/github_tempr1 -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15"
+ssh -T -F /dev/null -i "$HOME/.ssh/github_tempr1" -o IdentitiesOnly=yes git@github.com || true
+```
+| # | 命令 | 作用 | 成功判据 |
+|---|---|---|---|
+| 1 | `git remote add backup ...` | 已有同地址则跳过，不覆盖既有 remote | `git remote -v` 出现 `backup git@github.com:2200170080/Temp-R1.git` |
+| 2 | `git config --local core.sshCommand ...` | 该仓库的每次 push 都固定用 `github_tempr1` 这把钥匙 | `git config --local --get core.sshCommand` 有输出 |
+| 3 | `ssh -T ... git@github.com` | 验证**仓库级**认证，而不是账号级 | 返回 `Hi 2200170080/Temp-R1!` |
+
+**`-F /dev/null` 不能省。** 本机全局 `~/.ssh/config` 里 `Host github.com` 写死了 `IdentityFile ~/.ssh/github_ssr`，那是 SSR 仓库的部署密钥。不绕过时 GitHub 会用那把钥匙认证，返回 `Hi 2200170080/SSR!`，随后推送报：
+
+```
+ERROR: Permission to 2200170080/Temp-R1.git denied to deploy key
+```
+
+`ssh -T` 的返回码是 1，这是 GitHub 不提供 shell 的正常现象，不是错误。
+
+### 13.4 首次推送：浅克隆必须先重建历史
+
+```bash
+cd ~/Temp-R1
+git checkout --orphan sync-main
+git rm -r -f --cached .
+git add -A
+git diff --cached --name-only -z | xargs -0 -r du -k | sort -rn | head -10
+git -c user.name='Temp-R1' -c user.email='autosync@localhost' commit -m 'init: Temp-R1 复现环境与数据准备'
+git branch -M main
+git push -u backup main
+```
+| # | 命令 | 作用 | 成功判据 |
+|---|---|---|---|
+| 1 | `git checkout --orphan sync-main` | 建无父提交的分支，工作区文件全部保留 | `git branch --show-current` 为 `sync-main` |
+| 2 | `git rm -r -f --cached .` | 清空索引，让 `.gitignore` 重新生效 | 无输出 |
+| 3 | `git add -A` | 按新规则暂存全部文件 | `git diff --cached --name-only \| wc -l` 约 489 |
+| 4 | `du -k ... \| sort -rn \| head -10` | **推送前必查**暂存区最大文件 | 第一名 < 100000（约 100 MiB） |
+| 5 | `git commit -m 'init: ...'` | 生成唯一初始提交 | `git log --oneline -1` 有输出 |
+| 6 | `git branch -M main` | 把新历史命名为 `main` | `git branch --show-current` 为 `main` |
+| 7 | `git push -u backup main` | 首次推送并建立跟踪 | `* [new branch] main -> main` |
+
+**为什么要重建而不是直接推**：仓库是 `git clone --depth 1` 拉下来的，浅仓库不允许推送，直接推会报 `shallow update not allowed`。拉全上游历史需多下载几百 MB 再上传一遍，所以改用 `--orphan` 建一条干净历史；代价是上游 commit 记录不在本仓库内，需要对比时通过 `origin` 拉取。
+
+**`du -k` 那一行是硬门槛**：GitHub 单文件上限 100 MiB，超了推送会失败，且一旦进入历史，后来删除文件也无法挽回，只能重建历史。已知 `corpus/full_kg.jsonl` 为 98.40 MiB，只剩约 1.6 MiB 余量。
+
+推送 738 MB 时 `git push` 会打印 `remote: warning: File ... is 67.89 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB` 与 `GH001: Large files detected`。**这是警告不是失败**，只要对应文件 < 100 MiB 推送会正常完成。
+
+### 13.5 启动同步器
+
+```bash
+tmux has-session -t '=sync' 2>/dev/null || tmux new-session -d -s sync -c "$HOME/Temp-R1" bash -c 'set -o pipefail; ROOT="$HOME/Temp-R1" REMOTE=backup BRANCH=main INTERVAL=60 MAX_MB=50 RETRIES=3 bash "$HOME/Temp-R1/scripts/github-sync/autosync.sh" 2>&1 | tee -a "$HOME/Temp-R1/scripts/github-sync/autosync.log"'
+sleep 20
+tmux ls
+pgrep -af '[a]utosync.sh' | head -3
+tail -n 5 "$HOME/Temp-R1/scripts/github-sync/autosync.log"
+```
+| # | 命令 | 作用 | 成功判据 |
+|---|---|---|---|
+| 1 | `tmux has-session ... \|\| tmux new-session ...` | 同名会话不存在才创建，避免起第二份同步器 | 返回 `[detached (from session sync)]` |
+| 2 | `sleep 20` + `tmux ls` | 会话存在不等于脚本起来了 | 列出 `sync: 1 windows` |
+| 3 | `pgrep -af '[a]utosync.sh'` | 确认脚本进程本身在跑 | 至少一行 `bash .../autosync.sh` |
+| 4 | `tail -n 5 .../autosync.log` | 看启动横幅与实际提交 | 含 `autosync 启动 root=... interval=60s max=50MB` |
+
+脚本每轮的动作：`git add -A` → 把暂存区中超过 `MAX_MB`（默认 50）的文件 `git reset` 撤出（工作区保留，日志记 `skipped(big)`）→ 暂存区非空则提交 `auto: <时间> @ <主机名>` → 推送 `HEAD:refs/heads/main`，失败重试 3 次、间隔 10 秒。
+
+### 13.6 验证同步真的成功
+
+```bash
+cd ~/Temp-R1
+git rev-parse HEAD
+git ls-remote backup refs/heads/main
+tail -n 10 scripts/github-sync/autosync.log
+```
+| # | 命令 | 作用 | 成功判据 |
+|---|---|---|---|
+| 1 | `git rev-parse HEAD` | 本地当前提交的完整 SHA | 40 位 SHA |
+| 2 | `git ls-remote backup refs/heads/main` | 向 GitHub 实时查询远端 `main` 的 SHA | 第一列 SHA 与上一条**完全相同** |
+| 3 | `tail -n 10 .../autosync.log` | 对照本轮是否真的 `pushed` | 末行 `pushed <短 SHA>` |
+
+**只有两行 SHA 相同才算同步成功。** 会话存在、日志里有 `pushed` 都不够——推送失败时脚本只重试、不退出，日志会停在上一轮的 `pushed`，看起来一切正常。
+
+### 13.7 同步范围
+
+| 内容 | 是否同步 | 说明 |
+|---|---|---|
+| 源码 `verl/`、`search_r1/`、`scripts/`、`LLaMA-Factory/` | 同步 | 不含 `__pycache__`、`*.pyc` |
+| `outputs/` | **同步** | SFT 轨迹等小体积产物（当前约 19 M） |
+| `data/MultiTQ/*.json`（dev / test / split_by_qtype） | 同步 | 单文件最大约 38 M |
+| `data/timelinekgqa_*/*.parquet` | 同步 | 上游自带 |
+| `corpus/`（除 `kg_index/`） | 同步 | 含 98.40 MiB 的 `full_kg.jsonl`，逼近硬限 |
+| 手册与文档 | 同步 | 本手册、`docs/GitHub同步说明.md` |
+| `corpus/kg_index/` | 不同步 | 2.8 G，可由 5.3 重建 |
+| `data/multitq_search2/` | 不同步 | 499 M，可由 4.5 重建 |
+| `data/MultiTQ/train*.json` | 不同步 | 各 131 M，**超过单文件硬限，物理上不可能上传** |
+| `outputs/` 之外的 `*.log`、`__pycache__/`、`*.pyc`、`.env` | 不同步 | 运行产物与敏感信息 |
+
+### 13.8 停止与重启
+
+```bash
+tmux kill-session -t '=sync'
+pgrep -af '[a]utosync.sh'
+```
+| # | 命令 | 作用 | 成功判据 |
+|---|---|---|---|
+| 1 | `tmux kill-session -t '=sync'` | 结束同步会话及其子进程 | `tmux ls` 中不再有 `sync` |
+| 2 | `pgrep -af '[a]utosync.sh'` | 确认没有残留（包装 shell 与脚本可能分别显示） | 无输出 |
+
+重启即重新执行 13.5。节点重启后 tmux 不会自动恢复会话，需手动拉起。
+
+**同一工作区只能跑一套同步器**：`/root/user/...` 是共享盘，两个节点同时跑会争抢 `.git/index.lock`。
+
+### 13.9 故障对照
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| `denied to deploy key` | 用了全局 `~/.ssh/config` 里的 SSR 密钥 | 确认 13.3 的 `core.sshCommand` 带 `-F /dev/null` |
+| `Hi 2200170080/SSR!` | 同上，认证落到了 SSR 仓库的部署密钥 | 同上；目标是 `Hi 2200170080/Temp-R1!` |
+| `shallow update not allowed` | 仓库是 `--depth 1` 浅克隆 | 按 13.4 用 `--orphan` 重建历史 |
+| `Permission ... denied` 但 `ssh -T` 正常 | 部署密钥未勾 `Allow write access` | 回 13.2 重新添加并勾选 |
+| `remote: error: File ... exceeds 100.00 MB` | 暂存了超大文件 | 停同步器，把文件加入 `.gitignore` 后按 13.4 重建历史 |
+| 日志停在上一轮 `pushed`，改动没上去 | 本轮 push 失败并在重试 | 看日志末尾 `push 失败 第N次`，核对网络与远端状态 |
+| 有同步器但从不提交 | 改动被忽略、或都是 `skipped(big)` | `git status --short` 与 `git check-ignore -v <文件>` 双向核对 |
+| `fetch first` / non-fast-forward | 远端有本地没有的提交 | 停同步器，`git fetch backup main`，人工核对后用 `git push backup HEAD:refs/heads/main` 补推 |
+| `.git/index.lock` 存在 | 有并行的 Git 写操作 | 先确认无其他同步器或提交进程，再处理锁 |
+| 自动提交记录全是 `auto: ...` | 正常行为 | 需要可读历史时手动提交一次，自动提交会接在后面 |
+
+### 本节验收
+
+| 检查命令 | 期望输出 |
+|---|---|
+| `git ls-remote backup refs/heads/main` 与 `git rev-parse HEAD` | 两个 SHA 完全相同 |
+| `tmux ls` | 有 `sync` 会话 |
+| `pgrep -af '[a]utosync.sh'` | 至少一行进程 |
+| `git status --short` | 为空（已全部提交） |
+| `git log --oneline -3` | 顶部为 `auto: <时间> @ <主机名>` 或人工提交 |
+
 ## 附：本手册的事实来源
 
 | 结论 | 依据 |
@@ -670,6 +850,7 @@ tmux ls ; pgrep -af main_ppo | head -3 ; tail -20 ~/Temp-R1/logs/stage1.log
 | 检索验收 | `curl POST /retrieve` 返回 `Stellenbosch_University ... 0.8566` |
 | 论文超参与锚点 | `paper_text.txt` 第 7 页（Figure 4 读数）与附录 C（3×A800、AdamW、FSDP、梯度裁剪 5.0） |
 | G / β / batch 的代码与论文冲突 | `train_grpo_stage1.sh` / `stage2.sh` 与论文 §4 的逐项比对 |
+| GitHub 同步 | 2026-11-08 09:58–10:04 的 `git push`、`git ls-remote`、`autosync.log` 实测；本地与远端 SHA 一致，另以一次新增文件验证了自动提交与推送延迟 ≤60 s |
 
 **未核对项汇总**（执行前必须自查，不要当成已确认）：
 
