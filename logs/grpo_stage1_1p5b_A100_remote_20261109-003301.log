@@ -201,3 +201,66 @@
 [33m(raylet)[0m [2026-11-09 00:33:42,339 E 3444336 3444336] (raylet) main.cc:975: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
 [2026-11-09 00:33:43,788 E 3444048 3444444] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
 [36m(pid=3444456)[0m [2026-11-09 00:33:43,759 E 3444456 3444817] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+[36m(WorkerDict pid=3445759)[0m Actor use_remove_padding=False
+[36m(WorkerDict pid=3445759)[0m Flash Attention 2.0 only supports torch.float16 and torch.bfloat16 dtypes, but the current dype in Qwen2ForCausalLM is torch.float32. You should run training or inference using Automatic Mixed-Precision via the `with torch.autocast(device_type='torch_device'):` decorator, or load the model with the `torch_dtype` argument. Example: `model = AutoModel.from_pretrained("openai/whisper-tiny", attn_implementation="flash_attention_2", torch_dtype=torch.float16)`
+[36m(main_task pid=3445433)[0m [2026-11-09 00:33:44,469 E 3445433 3445473] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14[32m [repeated 12x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(WorkerDict pid=3445759)[0m Model config after override: Qwen2Config {
+[36m(WorkerDict pid=3445759)[0m   "_name_or_path": "/root/user/cs_tcci_zengdexin/Temp-R1/LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft",
+[36m(WorkerDict pid=3445759)[0m   "architectures": [
+[36m(WorkerDict pid=3445759)[0m     "Qwen2ForCausalLM"
+[36m(WorkerDict pid=3445759)[0m   ],
+[36m(WorkerDict pid=3445759)[0m   "attention_dropout": 0.0,
+[36m(WorkerDict pid=3445759)[0m   "eos_token_id": 151645,
+[36m(WorkerDict pid=3445759)[0m   "hidden_act": "silu",
+[36m(WorkerDict pid=3445759)[0m   "hidden_size": 1536,
+[36m(WorkerDict pid=3445759)[0m   "initializer_range": 0.02,
+[36m(WorkerDict pid=3445759)[0m   "intermediate_size": 8960,
+[36m(WorkerDict pid=3445759)[0m   "max_position_embeddings": 32768,
+[36m(WorkerDict pid=3445759)[0m   "max_window_layers": 21,
+[36m(WorkerDict pid=3445759)[0m   "model_type": "qwen2",
+[36m(WorkerDict pid=3445759)[0m   "num_attention_heads": 12,
+[36m(WorkerDict pid=3445759)[0m   "num_hidden_layers": 28,
+[36m(WorkerDict pid=3445759)[0m   "num_key_value_heads": 2,
+[36m(WorkerDict pid=3445759)[0m   "pad_token_id": 151643,
+[36m(WorkerDict pid=3445759)[0m   "rms_norm_eps": 1e-06,
+[36m(WorkerDict pid=3445759)[0m   "rope_scaling": null,
+[36m(WorkerDict pid=3445759)[0m   "rope_theta": 1000000.0,
+[36m(WorkerDict pid=3445759)[0m   "sliding_window": 32768,
+[36m(WorkerDict pid=3445759)[0m   "tie_word_embeddings": true,
+[36m(WorkerDict pid=3445759)[0m   "torch_dtype": "bfloat16",
+[36m(WorkerDict pid=3445759)[0m   "transformers_version": "4.49.0",
+[36m(WorkerDict pid=3445759)[0m   "use_cache": false,
+[36m(WorkerDict pid=3445759)[0m   "use_sliding_window": false,
+[36m(WorkerDict pid=3445759)[0m   "vocab_size": 151936
+[36m(WorkerDict pid=3445759)[0m }
+[36m(WorkerDict pid=3445759)[0m 
+[36m(WorkerDict pid=3445759)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/_init_utils.py:440: UserWarning: FSDP is switching to use `NO_SHARD` instead of ShardingStrategy.FULL_SHARD since the world size is 1.
+[36m(WorkerDict pid=3445759)[0m   warnings.warn(
+[36m(WorkerDict pid=3445759)[0m Qwen2ForCausalLM contains 1.54B parameters
+[36m(WorkerDict pid=3445759)[0m wrap_policy: functools.partial(<function _or_policy at 0x7f2d942f64c0>, policies=[functools.partial(<function transformer_auto_wrap_policy at 0x7f2d942f63a0>, transformer_layer_cls={<class 'transformers.models.qwen2.modeling_qwen2.Qwen2DecoderLayer'>})])
+[36m(WorkerGroupRegisterCenter pid=3445867)[0m [2026-11-09 00:34:08,138 E 3445867 3445937] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14[32m [repeated 3x across cluster][0m
+[36m(WorkerDict pid=3445759)[0m Total steps: 80, num_warmup_steps: 0
+[36m(WorkerDict pid=3445759)[0m Actor use_remove_padding=False
+[36m(WorkerDict pid=3445759)[0m Before building vllm rollout, memory allocated (GB): 8.64726972579956, memory reserved (GB): 8.69140625
+[36m(WorkerDict pid=3445759)[0m WARNING 11-09 00:34:18 config.py:380] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+[36m(WorkerDict pid=3445759)[0m local rank 0
+[36m(WorkerDict pid=3445759)[0m INFO 11-09 00:34:19 selector.py:115] Using XFormers backend.
+[36m(WorkerDict pid=3445759)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/xformers/ops/fmha/flash.py:211: FutureWarning: `torch.library.impl_abstract` was renamed to `torch.library.register_fake`. Please use that instead; we will remove `torch.library.impl_abstract` in a future version of PyTorch.
+[36m(WorkerDict pid=3445759)[0m   @torch.library.impl_abstract("xformers_flash::flash_fwd")
+[36m(WorkerDict pid=3445759)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/xformers/ops/fmha/flash.py:344: FutureWarning: `torch.library.impl_abstract` was renamed to `torch.library.register_fake`. Please use that instead; we will remove `torch.library.impl_abstract` in a future version of PyTorch.
+[36m(WorkerDict pid=3445759)[0m   @torch.library.impl_abstract("xformers_flash::flash_bwd")
+[36m(WorkerDict pid=3445759)[0m no hf weight loader need to be updated
+[36m(WorkerDict pid=3445759)[0m INFO 11-09 00:34:20 selector.py:115] Using XFormers backend.
+[36m(WorkerDict pid=3445759)[0m before init cache memory allocated: 12.39386368GB, reserved: 12.580814848GB
+[36m(WorkerDict pid=3445759)[0m after init cache memory allocated: 23.25711104GB, reserved: 23.444062208GB
+[36m(WorkerDict pid=3445759)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:689: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[36m(WorkerDict pid=3445759)[0m   warnings.warn(
+[36m(WorkerDict pid=3445759)[0m kwargs: {'n': 1, 'logprobs': 1, 'max_tokens': 1000, 'detokenize': False, 'temperature': 1.0, 'top_k': -1, 'top_p': 0.95, 'ignore_eos': False}
+[36m(WorkerDict pid=3445759)[0m After building vllm rollout, memory allocated (GB): 18.780208110809326, memory reserved (GB): 21.833984375
+[36m(WorkerDict pid=3445759)[0m After building sharding manager, memory allocated (GB): 18.780208110809326, memory reserved (GB): 21.833984375
+[36m(main_task pid=3445433)[0m epoch 0, step 1
+[36m(WorkerDict pid=3445759)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/_state_dict_utils.py:773: UserWarning: When using ``NO_SHARD`` for ``ShardingStrategy``, full_state_dict willbe returned.
+[36m(WorkerDict pid=3445759)[0m   warnings.warn(
+[36m(WorkerDict pid=3445759)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/_state_dict_utils.py:716: UserWarning: When using ``NO_SHARD`` for ``ShardingStrategy``, full_state_dict willbe returned.
+[36m(WorkerDict pid=3445759)[0m   warnings.warn(
+[36m(WorkerDict pid=3445759)[0m WARNING 11-09 00:34:55 scheduler.py:1484] Sequence group 211 is preempted by PreemptionMode.RECOMPUTE mode because there is not enough KV cache space. This can affect the end-to-end performance. Increase gpu_memory_utilization or tensor_parallel_size to provide more KV cache memory. total_num_cumulative_preemption=1
