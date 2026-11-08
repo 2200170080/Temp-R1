@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """整理 Temp-R1 的已知旧产物；默认只预览，--apply 才修改本机文件。
 
-仅删除本次复现已确认的两个 SFT 检查点和两个测试输出目录。
+仅删除本次复现已确认的旧检查点、测试输出及历史测试日志/运行配置。
 不启动训练，不停止服务，不提交 Git，不访问网络，不扫描 /proc/*/fd。
 兼容服务器 Python 3.9，仅使用标准库。
 """
@@ -23,12 +23,27 @@ import tempfile
 
 
 SFT = "LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft"
-DELETE_ALLOWLIST = (
+OLD_TENSORBOARD_RUN = SFT + "/runs/Nov08_12-45-37_ecs-instance-cdb4917c"
+OLD_HYDRA_RUNS = tuple(
+    prefix + "/" + time
+    for prefix in ("logs/grpo_runs/2026-11-08", "outputs/2026-11-08")
+    for time in ("14-46-41", "15-02-24", "15-13-15")
+)
+DELETE_DIRECTORY_ALLOWLIST = (
     SFT + "/checkpoint-50",
     SFT + "/checkpoint-100",
     "LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft-smoke-20261108-114928",
     "verl_checkpoints/qwen1p5b-stage1-smoke-20261108-150209",
+) + OLD_HYDRA_RUNS
+DELETE_FILE_ALLOWLIST = (
+    "logs/build_index.log",
+    "logs/grpo_preflight.log",
+    "logs/grpo_memory_fix.log",
+    "logs/sft_qwen_1p5b_smoke.log",
+    "logs/grpo_stage1_1p5b_smoke.log",
+    OLD_TENSORBOARD_RUN + "/events.out.tfevents.1794113172.ecs-instance-cdb4917c.1456972.0",
 )
+DELETE_ALLOWLIST = DELETE_DIRECTORY_ALLOWLIST + DELETE_FILE_ALLOWLIST
 MOVES = (
     ("scripts/train_grpo_stage1_1p5b.sh",
      "scripts/multitq/train_grpo_stage1_1p5b.sh"),
@@ -36,7 +51,6 @@ MOVES = (
      "scripts/multitq/train_grpo_stage1_1p5b_smoke.sh"),
     ("scripts/fix_grpo_response_logits.py",
      "scripts/maintenance/fix_grpo_response_logits.py"),
-    ("outputs/2026-11-08", "logs/grpo_runs/2026-11-08"),
 )
 NAV_START = "<!-- tempr1-local-navigation -->"
 NAV_END = "<!-- /tempr1-local-navigation -->"
@@ -91,8 +105,8 @@ Temp-R1/
 │   ├── maintenance/         整理与修复工具
 │   └── github-sync/         同步脚本及其活动日志
 ├── docs/                    部署记录、目录说明、同步说明、环境快照
-├── logs/                    SFT、GRPO、检索构建及预检日志
-│   └── grpo_runs/           Hydra 运行配置；旧记录按日期保存
+├── logs/                    正式 SFT 成功日志与最近正式 GRPO 失败日志
+│   └── grpo_runs/           以后运行的 Hydra 配置；旧测试记录已清理
 ├── outputs/                 作者提供的 GPT 轨迹和 SFT 中间数据
 ├── data/                    原始数据、分类数据及 GRPO parquet
 ├── corpus/                  知识图谱语料及 kg_index 检索索引
@@ -111,17 +125,26 @@ Temp-R1/
 
 - 保留最终 SFT：\x60LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft/\x60
   中的独立权重、config、tokenizer、训练结果及 loss 图。
-- 删除范围仅为已列明的 \x60checkpoint-50/\x60、\x60checkpoint-100/\x60、
+- 旧模型清理范围为已列明的 \x60checkpoint-50/\x60、\x60checkpoint-100/\x60、
   \x60sft-smoke-20261108-114928/\x60 和
   \x60qwen1p5b-stage1-smoke-20261108-150209/\x60。
   删除前检查最终 SFT 的配置、tokenizer 和 safetensors 文件结构。
+- 同时清理本次建索引、预检、显存补丁与 SFT/GRPO 测试日志，以及
+  \x60logs/grpo_runs/2026-11-08/\x60 下的
+  \x6014-46-41/\x60、\x6015-02-24/\x60、\x6015-13-15/\x60 历史配置目录。
+  保留正式 \x60sft_qwen_1p5b.log\x60 与最近的 \x60grpo_stage1_1p5b.log\x60。
+- 删除已结束的 SFT TensorBoard 事件文件及其空目录；
+  最终模型目录中的训练指标、\x60trainer_log.jsonl\x60 和 loss 图继续保留。
 - 删除旧 SFT 检查点也会删除其中的优化器状态，不能再从第 50/100 步精确续训；
   独立最终 SFT 权重继续用于后续 GRPO 和推理。
 - 保留所有未明确列入删除清单的模型目录，尤其正式 GRPO 的 \x60actor/global_step_*\x60。
 - 保留作者轨迹、原始/加工数据、索引、关键成功/失败日志、安装元数据和缓存。
-- 旧 Hydra 运行配置从 \x60outputs/2026-11-08/\x60 移入
-  \x60logs/grpo_runs/2026-11-08/\x60；当前 1.5B GRPO 入口的新配置也写到
-  \x60logs/grpo_runs/<experiment_name>/\x60。
+- 当前 1.5B GRPO 入口的新配置写到 \x60logs/grpo_runs/<experiment_name>/\x60。
+  三套已结束的历史运行配置会实际删除，不再转存到归档目录。
+- 已核实的阶段结论：正式 SFT 完成 100 步、2 个 epoch，平均训练 loss 约
+  0.14289；响应 logits 的显存修复已通过 CPU 输出/梯度等价检查及两步
+  GRPO 测试；正式 Stage1 在首步 \x60loss.backward()\x60 显存不足，
+  当时剩余 1.29 GiB、还需分配 2.84 GiB。两步测试不代表正式评测结果。
 
 ## 整理后的检查
 
@@ -184,6 +207,28 @@ def tree_bytes(root, relative):
             elif not stat.S_ISDIR(info.st_mode):
                 raise RuntimeError("候选包含特殊文件，保留并停止: " + str(item))
     return total
+
+
+def artifact_bytes(root, relative):
+    path = inside(root, relative)
+    if path.is_dir():
+        return tree_bytes(root, relative)
+    if path.is_file() and stat.S_ISREG(path.lstat().st_mode):
+        return path.stat().st_size
+    raise RuntimeError("清理候选不是普通文件或目录: " + str(path))
+
+
+def check_delete_candidate(root, relative):
+    path = inside(root, relative)
+    if relative in DELETE_FILE_ALLOWLIST:
+        if not path.is_file():
+            raise RuntimeError("清理清单中的文件变成其他类型，保留并停止: " + str(path))
+    elif relative in DELETE_DIRECTORY_ALLOWLIST:
+        if not path.is_dir():
+            raise RuntimeError("清理清单中的目录变成其他类型，保留并停止: " + str(path))
+    else:
+        raise RuntimeError("删除路径不在固定清单: " + relative)
+    return artifact_bytes(root, relative)
 
 
 def walk_error(error):
@@ -329,19 +374,23 @@ def check_hydra_directory(path):
     for run in path.iterdir():
         if not run.is_dir() or not re.fullmatch(r"\d{2}-\d{2}-\d{2}", run.name):
             raise RuntimeError("outputs 日期目录有非预期内容，保留并停止: " + str(run))
-        files = {item.relative_to(run).as_posix() for item in run.rglob("*") if item.is_file()}
-        expected = {".hydra/config.yaml", ".hydra/hydra.yaml", ".hydra/overrides.yaml"}
-        # Hydra 默认还会创建该日志；旧 Git 忽略规则使其未出现在远端文件树。
-        optional = {"main_ppo_format.log"}
-        missing = expected - files
-        extra = files - expected - optional
-        if missing or extra:
-            raise RuntimeError(
-                "运行目录有未识别内容或缺少配置，保留并停止: {}\n缺少: {}\n额外: {}".format(
-                    run, ", ".join(sorted(missing)) or "无",
-                    ", ".join(sorted(extra)) or "无",
-                )
+        check_hydra_run(run)
+
+
+def check_hydra_run(run):
+    files = {item.relative_to(run).as_posix() for item in run.rglob("*") if item.is_file()}
+    expected = {".hydra/config.yaml", ".hydra/hydra.yaml", ".hydra/overrides.yaml"}
+    # Hydra 默认还会创建该日志；旧 Git 忽略规则使其未出现在远端文件树。
+    optional = {"main_ppo_format.log"}
+    missing = expected - files
+    extra = files - expected - optional
+    if missing or extra:
+        raise RuntimeError(
+            "运行目录有未识别内容或缺少配置，保留并停止: {}\n缺少: {}\n额外: {}".format(
+                run, ", ".join(sorted(missing)) or "无",
+                ", ".join(sorted(extra)) or "无",
             )
+        )
 
 
 def add_write(plan, relative, content):
@@ -358,7 +407,9 @@ def build_plan(root):
     for relative in DELETE_ALLOWLIST:
         path = inside(root, relative)
         if path.exists():
-            plan.reclaim_bytes += tree_bytes(root, relative)
+            plan.reclaim_bytes += check_delete_candidate(root, relative)
+            if relative in OLD_HYDRA_RUNS:
+                check_hydra_run(path)
             plan.deletes.append(relative)
             plan.sources[relative] = tree_stamp(root, relative)
     for source, destination in MOVES:
@@ -431,14 +482,23 @@ def show_plan(plan):
     print("项目:", plan.root)
     print("保留: 最终 SFT、作者轨迹、数据、索引、正式 GRPO 产物、关键日志和源码修复")
     for relative in plan.deletes:
-        size = tree_bytes(plan.root, relative) / (1024 ** 3)
-        print("删除: {} ({:.2f} GiB)".format(relative, size))
-    print("候选文件大小合计: {:.2f} GiB（实际释放量受文件系统影响）".format(plan.reclaim_bytes / (1024 ** 3)))
+        size = check_delete_candidate(plan.root, relative)
+        print("删除: {} ({})".format(relative, format_bytes(size)))
+    print("候选文件大小合计: {}（实际释放量受文件系统影响）".format(format_bytes(plan.reclaim_bytes)))
     for source, destination in plan.moves:
         print("移动:", source, "->", destination)
     for relative in plan.writes:
         print("更新:", relative)
-    print("删除检查点将移除其优化器续训状态；独立最终 SFT 权重保留。")
+    if any(relative.startswith(SFT + "/checkpoint-") for relative in plan.deletes):
+        print("删除检查点将移除其优化器续训状态；独立最终 SFT 权重保留。")
+
+
+def format_bytes(size):
+    if size >= 1024 ** 3:
+        return "{:.2f} GiB".format(size / (1024 ** 3))
+    if size >= 1024 ** 2:
+        return "{:.2f} MiB".format(size / (1024 ** 2))
+    return "{:.1f} KiB".format(size / 1024)
 
 
 def atomic_write(path, before, after):
@@ -487,11 +547,23 @@ def execute_plan(plan, process_guard=ensure_idle):
         if check_project(plan.root) != plan.protected:
             raise RuntimeError("保护文件发生变化，停止删除。")
         path = inside(plan.root, relative)
-        tree_bytes(plan.root, relative)
+        check_delete_candidate(plan.root, relative)
         if tree_stamp(plan.root, relative) != plan.sources[relative]:
-            raise RuntimeError("候选目录在检查后发生变化，停止删除: " + relative)
-        shutil.rmtree(str(path))
+            raise RuntimeError("候选在检查后发生变化，停止删除: " + relative)
+        if path.is_dir():
+            shutil.rmtree(str(path))
+        else:
+            path.unlink()
         print("已删除:", relative)
+    # 只移除已知的空父目录，不递归删除其他内容。
+    for relative in (
+        "logs/grpo_runs/2026-11-08", "logs/grpo_runs", "outputs/2026-11-08",
+        OLD_TENSORBOARD_RUN, SFT + "/runs",
+    ):
+        path = inside(plan.root, relative)
+        if path.is_dir() and not any(path.iterdir()):
+            path.rmdir()
+            print("已移除空目录:", relative)
     if check_project(plan.root) != plan.protected:
         raise RuntimeError("整理后保护文件不一致，请保留现场检查。")
     print("整理完成：最终 SFT 文件状态及作者轨迹校验一致；未启动训练或 Git 同步。")

@@ -1,6 +1,0 @@
-Sliding Window Attention is enabled but not implemented for `eager`; unexpected results may be encountered.
-CPU_EQUIVALENCE_OK: response logits, loss, and all parameter gradients match.
-Transformers: 4.49.0 Torch: 2.4.0+cu121
-Original actor source backed up to: /root/user/cs_tcci_zengdexin/Temp-R1-grpo-memory-backup-20261108-150143-224110/dp_actor.py
-Patched: /root/user/cs_tcci_zengdexin/Temp-R1/verl/workers/actor/dp_actor.py
-GRPO_MEMORY_PATCH_OK

@@ -32,8 +32,8 @@ Temp-R1/
 │   ├── maintenance/         整理与修复工具
 │   └── github-sync/         同步脚本及其活动日志
 ├── docs/                    部署记录、目录说明、同步说明、环境快照
-├── logs/                    SFT、GRPO、检索构建及预检日志
-│   └── grpo_runs/           Hydra 运行配置；旧记录按日期保存
+├── logs/                    正式 SFT 成功日志与最近正式 GRPO 失败日志
+│   └── grpo_runs/           以后运行的 Hydra 配置；旧测试记录已清理
 ├── outputs/                 作者提供的 GPT 轨迹和 SFT 中间数据
 ├── data/                    原始数据、分类数据及 GRPO parquet
 ├── corpus/                  知识图谱语料及 kg_index 检索索引
@@ -52,17 +52,26 @@ Temp-R1/
 
 - 保留最终 SFT：`LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft/`
   中的独立权重、config、tokenizer、训练结果及 loss 图。
-- 删除范围仅为已列明的 `checkpoint-50/`、`checkpoint-100/`、
+- 旧模型清理范围为已列明的 `checkpoint-50/`、`checkpoint-100/`、
   `sft-smoke-20261108-114928/` 和
   `qwen1p5b-stage1-smoke-20261108-150209/`。
   删除前检查最终 SFT 的配置、tokenizer 和 safetensors 文件结构。
+- 同时清理本次建索引、预检、显存补丁与 SFT/GRPO 测试日志，以及
+  `logs/grpo_runs/2026-11-08/` 下的
+  `14-46-41/`、`15-02-24/`、`15-13-15/` 历史配置目录。
+  保留正式 `sft_qwen_1p5b.log` 与最近的 `grpo_stage1_1p5b.log`。
+- 删除已结束的 SFT TensorBoard 事件文件及其空目录；
+  最终模型目录中的训练指标、`trainer_log.jsonl` 和 loss 图继续保留。
 - 删除旧 SFT 检查点也会删除其中的优化器状态，不能再从第 50/100 步精确续训；
   独立最终 SFT 权重继续用于后续 GRPO 和推理。
 - 保留所有未明确列入删除清单的模型目录，尤其正式 GRPO 的 `actor/global_step_*`。
 - 保留作者轨迹、原始/加工数据、索引、关键成功/失败日志、安装元数据和缓存。
-- 旧 Hydra 运行配置从 `outputs/2026-11-08/` 移入
-  `logs/grpo_runs/2026-11-08/`；当前 1.5B GRPO 入口的新配置也写到
-  `logs/grpo_runs/<experiment_name>/`。
+- 当前 1.5B GRPO 入口的新配置写到 `logs/grpo_runs/<experiment_name>/`。
+  三套已结束的历史运行配置会实际删除，不再转存到归档目录。
+- 已核实的阶段结论：正式 SFT 完成 100 步、2 个 epoch，平均训练 loss 约
+  0.14289；响应 logits 的显存修复已通过 CPU 输出/梯度等价检查及两步
+  GRPO 测试；正式 Stage1 在首步 `loss.backward()` 显存不足，
+  当时剩余 1.29 GiB、还需分配 2.84 GiB。两步测试不代表正式评测结果。
 
 ## 整理后的检查
 
