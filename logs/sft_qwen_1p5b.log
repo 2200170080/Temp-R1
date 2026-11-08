@@ -702,4 +702,4 @@ Parameter Offload: Total persistent parameters: 144896 in 141 params
 [2026-11-08 13:11:22,965] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint global_step50 is ready now!
 /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/utils/checkpoint.py:295: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
   with torch.enable_grad(), device_autocast_ctx, torch.cpu.amp.autocast(**ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
- 51%|█████     | 51/100 [25:48<32:04, 39.27s/it]
+ 51%|█████     | 51/100 [25:48<32:04, 39.27s/it] 52%|█████▏    | 52/100 [26:17<29:04, 36.35s/it] 53%|█████▎    | 53/100 [26:46<26:40, 34.06s/it]
