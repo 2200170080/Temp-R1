@@ -106,7 +106,7 @@ def check_sync(root):
                         script = (entry / "cwd").resolve() / script
                     if script.resolve() == root / "scripts/github-sync/autosync.sh":
                         raise RuntimeError("同步器仍在运行，PID=" + entry.name + "；请先停止本项目的 tmux sync 会话。")
-        except (FileNotFoundError, PermissionError, ProcessLookupError):
+        except OSError:
             continue
 
 
@@ -126,9 +126,9 @@ def has_open_file(path):
                     s = fd.stat()
                     if (s.st_dev, s.st_ino) == (target.st_dev, target.st_ino):
                         return True
-                except (FileNotFoundError, PermissionError, ProcessLookupError):
+                except OSError:
                     continue
-        except (FileNotFoundError, PermissionError, ProcessLookupError):
+        except OSError:
             continue
     return False
 
