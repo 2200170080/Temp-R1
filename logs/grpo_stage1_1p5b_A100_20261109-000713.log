@@ -265,3 +265,4 @@
 [36m(WorkerDict pid=3440428)[0m   warnings.warn(
 [36m(WorkerDict pid=3440428)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/_state_dict_utils.py:716: UserWarning: When using ``NO_SHARD`` for ``ShardingStrategy``, full_state_dict willbe returned.
 [36m(WorkerDict pid=3440428)[0m   warnings.warn(
+[36m(WorkerDict pid=3440428)[0m WARNING 11-09 00:09:45 scheduler.py:1484] Sequence group 186 is preempted by PreemptionMode.RECOMPUTE mode because there is not enough KV cache space. This can affect the end-to-end performance. Increase gpu_memory_utilization or tensor_parallel_size to provide more KV cache memory. total_num_cumulative_preemption=1
