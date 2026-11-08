@@ -95,3 +95,4 @@ INFO:     127.0.0.1:43738 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:50728 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:59902 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:41756 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:46198 - "GET /metrics HTTP/1.1" 404 Not Found
