@@ -267,3 +267,4 @@
 [36m(WorkerDict pid=1495158)[0m WARNING 11-08 15:14:22 scheduler.py:1484] Sequence group 153 is preempted by PreemptionMode.RECOMPUTE mode because there is not enough KV cache space. This can affect the end-to-end performance. Increase gpu_memory_utilization or tensor_parallel_size to provide more KV cache memory. total_num_cumulative_preemption=1
 [36m(main_task pid=1494700)[0m [WARNING] OBSERVATION TOO LONG, CONSIDER CHANGING YOUR CONFIG, 1440 & 1400
 [36m(main_task pid=1494700)[0m [WARNING] OBSERVATION TOO LONG, CONSIDER CHANGING YOUR CONFIG, 1408 & 1400
+[36m(main_task pid=1494700)[0m [WARNING] OBSERVATION TOO LONG, CONSIDER CHANGING YOUR CONFIG, 1440 & 1400
