@@ -1,0 +1,13 @@
+# ---- Temp-R1 运行时产物：体积大或可重建，不同步到 GitHub ----
+/corpus/kg_index/
+/data/multitq_search2/
+/data/MultiTQ/train.json
+/data/MultiTQ/train_MULTITQ.json
+/data/MultiTQ/oversampled_for_sft.json
+/data/MultiTQ/oversampled_for_sft.stats.json
+/outputs/
+*.log
+__pycache__/
+*.pyc
+.env
+
