@@ -13,7 +13,7 @@ import datasets
 
 import uvicorn
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 def load_corpus(corpus_path: str):
     corpus = datasets.load_dataset(
@@ -32,7 +32,13 @@ def read_jsonl(file_path):
     return data
 
 def load_docs(corpus, doc_idxs):
-    results = [corpus[int(idx)] for idx in doc_idxs]
+    results = []
+    corpus_size = len(corpus)
+    for idx in doc_idxs:
+        idx = int(idx)
+        if idx < 0 or idx >= corpus_size:
+            raise IndexError(f"Retrieved document index {idx} is outside corpus size {corpus_size}")
+        results.append(corpus[idx])
     return results
 
 def load_model(model_path: str, use_fp16: bool = False):
@@ -127,6 +133,8 @@ class BaseRetriever:
         self.config = config
         self.retrieval_method = config.retrieval_method
         self.topk = config.retrieval_topk
+        if self.topk <= 0:
+            raise ValueError("retrieval_topk must be a positive integer")
         
         self.index_path = config.index_path
         self.corpus_path = config.corpus_path
@@ -208,6 +216,14 @@ class DenseRetriever(BaseRetriever):
     def __init__(self, config):
         super().__init__(config)
         self.index = faiss.read_index(self.index_path)
+        self.corpus = load_corpus(self.corpus_path)
+        if self.index.ntotal == 0:
+            raise ValueError("Retrieval index is empty; build a non-empty index before starting the server")
+        if self.index.ntotal != len(self.corpus):
+            raise ValueError(
+                f"Index/corpus row count mismatch: index={self.index.ntotal}, corpus={len(self.corpus)}. "
+                "Rebuild the index from this corpus in the same row order."
+            )
         
         if config.faiss_gpu:
             print("🔄 Loading index to GPU with optimized memory settings...")
@@ -236,7 +252,6 @@ class DenseRetriever(BaseRetriever):
                 print("⚠️  Using CPU mode instead")
                 # 保持CPU索引
         
-        self.corpus = load_corpus(self.corpus_path)
         self.encoder = Encoder(
             model_name = self.retrieval_method,
             model_path = config.retrieval_model_path,
@@ -250,6 +265,9 @@ class DenseRetriever(BaseRetriever):
     def _search(self, query: str, num: int = None, return_score: bool = False):
         if num is None:
             num = self.topk
+        if num <= 0:
+            raise ValueError("topk must be a positive integer")
+        num = min(num, self.index.ntotal)
         query_emb = self.encoder.encode(query)
         scores, idxs = self.index.search(query_emb, k=num)
         idxs = idxs[0]
@@ -265,6 +283,9 @@ class DenseRetriever(BaseRetriever):
             query_list = [query_list]
         if num is None:
             num = self.topk
+        if num <= 0:
+            raise ValueError("topk must be a positive integer")
+        num = min(num, self.index.ntotal)
         
         results = []
         scores = []
@@ -339,7 +360,7 @@ class Config:
 
 class QueryRequest(BaseModel):
     queries: List[str]
-    topk: Optional[int] = None
+    topk: Optional[int] = Field(default=None, gt=0, strict=True)
     return_scores: bool = False
 
 
@@ -356,14 +377,17 @@ def retrieve_endpoint(request: QueryRequest):
       "return_scores": true
     }
     """
-    if not request.topk:
-        request.topk = config.retrieval_topk  # fallback to default
+    if not request.queries:
+        return {"result": []}
+    topk = request.topk if request.topk is not None else config.retrieval_topk
 
+    # Always request scores internally; return_scores controls the response shape.
+    # A score-free retriever result is a list, not a (results, scores) tuple.
     # Perform batch retrieval
     results, scores = retriever.batch_search(
         query_list=request.queries,
-        num=request.topk,
-        return_score=request.return_scores
+        num=topk,
+        return_score=True
     )
     
     # Format response

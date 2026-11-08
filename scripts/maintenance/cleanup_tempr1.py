@@ -83,20 +83,21 @@ LAYOUT = """# Temp-R1 目录与产物说明
 
 | 用途 | 路径 |
 |---|---|
-| 1.5B SFT | \x60scripts/multitq/train_sft_qwen_1p5b.sh\x60 |
-| 1.5B GRPO Stage1 | \x60scripts/multitq/train_grpo_stage1_1p5b.sh\x60 |
-| 1.5B GRPO 两步测试 | \x60scripts/multitq/train_grpo_stage1_1p5b_smoke.sh\x60 |
-| 已安装的 GRPO 显存补丁工具 | \x60scripts/maintenance/fix_grpo_response_logits.py\x60 |
-| 本次整理工具（默认预览） | \x60scripts/maintenance/cleanup_tempr1.py\x60 |
-| 目录整理旧工具 | \x60scripts/maintenance/organize_tempr1.py\x60 |
-| 检索服务 | \x60scripts/retrieval/retrieval_launch.sh\x60 |
-| GitHub 自动同步 | \x60scripts/github-sync/autosync.sh\x60 |
+| 1.5B SFT | `scripts/multitq/train_sft_qwen_1p5b.sh` |
+| 1.5B GRPO Stage1 | `scripts/multitq/train_grpo_stage1_1p5b.sh` |
+| 1.5B GRPO 两步测试 | `scripts/multitq/train_grpo_stage1_1p5b_smoke.sh` |
+| 已安装的 GRPO 显存补丁工具 | `scripts/maintenance/fix_grpo_response_logits.py` |
+| 本次整理工具（默认预览） | `scripts/maintenance/cleanup_tempr1.py` |
+| 目录整理旧工具 | `scripts/maintenance/organize_tempr1.py` |
+| 时序 KG 转换与只读核对 | `scripts/data_process/convert_kg_to_jsonl.py` |
+| 检索服务 | `scripts/retrieval/retrieval_launch.sh` |
+| GitHub 自动同步 | `scripts/github-sync/autosync.sh` |
 
 上述训练入口仅作定位。本次不运行训练；原作者其他脚本继续保留供参考。
 
 ## 目录职责
 
-\x60\x60\x60text
+```text
 Temp-R1/
 ├── scripts/                 数据处理、按数据集训练/评测、维护及同步工具
 │   ├── multitq/             MultiTQ 入口，包括当前 1.5B 配置
@@ -115,42 +116,63 @@ Temp-R1/
 ├── search_r1/               检索与交互生成源码
 ├── verl_checkpoints/        后续正式 GRPO 权重的约定位置
 └── assets/                  论文说明图片
-\x60\x60\x60
+```
 
 保留 editable 安装的框架目录位置。正式权重和数据不为美化目录而搬迁。
-检索服务正在使用的 \x60logs/retrieval.log\x60 与同步器的
-\x60scripts/github-sync/autosync.log\x60 继续保留原位。
+检索服务正在使用的 `logs/retrieval.log` 与同步器的
+`scripts/github-sync/autosync.log` 继续保留原位。
 
 ## 保留与清理边界
 
-- 保留最终 SFT：\x60LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft/\x60
+- 保留最终 SFT：`LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft/`
   中的独立权重、config、tokenizer、训练结果及 loss 图。
-- 旧模型清理范围为已列明的 \x60checkpoint-50/\x60、\x60checkpoint-100/\x60、
-  \x60sft-smoke-20261108-114928/\x60 和
-  \x60qwen1p5b-stage1-smoke-20261108-150209/\x60。
+- 旧模型清理范围为已列明的 `checkpoint-50/`、`checkpoint-100/`、
+  `sft-smoke-20261108-114928/` 和
+  `qwen1p5b-stage1-smoke-20261108-150209/`。
   删除前检查最终 SFT 的配置、tokenizer 和 safetensors 文件结构。
 - 同时清理本次建索引、预检、显存补丁与 SFT/GRPO 测试日志，以及
-  \x60logs/grpo_runs/2026-11-08/\x60 下的
-  \x6014-46-41/\x60、\x6015-02-24/\x60、\x6015-13-15/\x60 历史配置目录。
-  保留正式 \x60sft_qwen_1p5b.log\x60 与最近的 \x60grpo_stage1_1p5b.log\x60。
+  `logs/grpo_runs/2026-11-08/` 下的
+  `14-46-41/`、`15-02-24/`、`15-13-15/` 历史配置目录。
+  保留正式 `sft_qwen_1p5b.log` 与最近的 `grpo_stage1_1p5b.log`。
 - 删除已结束的 SFT TensorBoard 事件文件及其空目录；
-  最终模型目录中的训练指标、\x60trainer_log.jsonl\x60 和 loss 图继续保留。
+  最终模型目录中的训练指标、`trainer_log.jsonl` 和 loss 图继续保留。
 - 删除旧 SFT 检查点也会删除其中的优化器状态，不能再从第 50/100 步精确续训；
   独立最终 SFT 权重继续用于后续 GRPO 和推理。
-- 保留所有未明确列入删除清单的模型目录，尤其正式 GRPO 的 \x60actor/global_step_*\x60。
+- 保留所有未明确列入删除清单的模型目录，尤其正式 GRPO 的 `actor/global_step_*`。
 - 保留作者轨迹、原始/加工数据、索引、关键成功/失败日志、安装元数据和缓存。
-- 当前 1.5B GRPO 入口的新配置写到 \x60logs/grpo_runs/<experiment_name>/\x60。
+- 当前 1.5B GRPO 入口的新配置写到 `logs/grpo_runs/<experiment_name>/`。
   三套已结束的历史运行配置会实际删除，不再转存到归档目录。
 - 已核实的阶段结论：正式 SFT 完成 100 步、2 个 epoch，平均训练 loss 约
   0.14289；响应 logits 的显存修复已通过 CPU 输出/梯度等价检查及两步
-  GRPO 测试；正式 Stage1 在首步 \x60loss.backward()\x60 显存不足，
+  GRPO 测试；正式 Stage1 在首步 `loss.backward()` 显存不足，
   当时剩余 1.29 GiB、还需分配 2.84 GiB。两步测试不代表正式评测结果。
+
+## 语料与检索一致性
+
+转换器从项目位置定位默认输入，支持显式输入/输出及 tab、pipe、空白四列格式。
+每条输出包含字符串 `id/contents/subject/predicate/object/date`；`contents` 保持
+`subject predicate object on YYYY-MM-DD`，保留关系下划线、原始顺序和重复事实。
+日期必须是合法的 `YYYY-MM-DD`。坏行会使转换整体失败；已有输出不覆盖，新文件完整成功后才发布。
+旧入口 `scripts/convert_kg_to_jsonl.py` 已由规范位置的实现替代。
+
+```bash
+python scripts/data_process/convert_kg_to_jsonl.py --verify-against corpus/full_kg.jsonl
+```
+
+上述核对逐行比较六个字段及记录数量，不生成语料、不修改索引，也不加载 GPU。
+当前 `full.txt` 与 `full_kg.jsonl` 各有 461329 条记录，已通过六字段逐行全量核对；48 项回归测试及五项实际接口验收均通过。
+FAISS 的检索位置依赖 JSONL 行顺序；行数、顺序或 `contents` 变化后应在新目录重建索引。
+行数相等本身不能证明旧索引与新语料兼容。
+
+检索接口默认 `return_scores=false` 返回文档列表，`true` 返回带分数的文档包装。
+空查询返回空结果；`topk` 必须为正整数，并限制到索引实际大小。
+空索引或索引/语料行数不匹配时，服务在加载 GPU 模型之前停止并报出原因。
 
 ## 整理后的检查
 
-整理工具默认仅输出计划；\x60--apply\x60 会执行已列明的本机操作。
-应先暂停本项目的 GitHub \x60sync\x60 会话；工具遇到仍在运行的训练或同步进程会停止。
-完成后核对 \x60git diff --stat\x60、最终 SFT 和检索服务，再恢复同步。
+整理工具默认仅输出计划；`--apply` 会执行已列明的本机操作。
+应先暂停本项目的 GitHub `sync` 会话；工具遇到仍在运行的训练或同步进程会停止。
+完成后核对 `git diff --stat`、最终 SFT 和检索服务，再恢复同步。
 本次操作不会提交、推送或启动实验。
 """
 

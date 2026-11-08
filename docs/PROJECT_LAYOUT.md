@@ -16,6 +16,7 @@
 | 已安装的 GRPO 显存补丁工具 | `scripts/maintenance/fix_grpo_response_logits.py` |
 | 本次整理工具（默认预览） | `scripts/maintenance/cleanup_tempr1.py` |
 | 目录整理旧工具 | `scripts/maintenance/organize_tempr1.py` |
+| 时序 KG 转换与只读核对 | `scripts/data_process/convert_kg_to_jsonl.py` |
 | 检索服务 | `scripts/retrieval/retrieval_launch.sh` |
 | GitHub 自动同步 | `scripts/github-sync/autosync.sh` |
 
@@ -72,6 +73,27 @@ Temp-R1/
   0.14289；响应 logits 的显存修复已通过 CPU 输出/梯度等价检查及两步
   GRPO 测试；正式 Stage1 在首步 `loss.backward()` 显存不足，
   当时剩余 1.29 GiB、还需分配 2.84 GiB。两步测试不代表正式评测结果。
+
+## 语料与检索一致性
+
+转换器从项目位置定位默认输入，支持显式输入/输出及 tab、pipe、空白四列格式。
+每条输出包含字符串 `id/contents/subject/predicate/object/date`；`contents` 保持
+`subject predicate object on YYYY-MM-DD`，保留关系下划线、原始顺序和重复事实。
+日期必须是合法的 `YYYY-MM-DD`。坏行会使转换整体失败；已有输出不覆盖，新文件完整成功后才发布。
+旧入口 `scripts/convert_kg_to_jsonl.py` 已由规范位置的实现替代。
+
+```bash
+python scripts/data_process/convert_kg_to_jsonl.py --verify-against corpus/full_kg.jsonl
+```
+
+上述核对逐行比较六个字段及记录数量，不生成语料、不修改索引，也不加载 GPU。
+当前 `full.txt` 与 `full_kg.jsonl` 各有 461329 条记录，已通过六字段逐行全量核对；48 项回归测试及五项实际接口验收均通过。
+FAISS 的检索位置依赖 JSONL 行顺序；行数、顺序或 `contents` 变化后应在新目录重建索引。
+行数相等本身不能证明旧索引与新语料兼容。
+
+检索接口默认 `return_scores=false` 返回文档列表，`true` 返回带分数的文档包装。
+空查询返回空结果；`topk` 必须为正整数，并限制到索引实际大小。
+空索引或索引/语料行数不匹配时，服务在加载 GPU 模型之前停止并报出原因。
 
 ## 整理后的检查
 

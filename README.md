@@ -7,6 +7,7 @@
 - SFT：`scripts/multitq/train_sft_qwen_1p5b.sh`
 - GRPO Stage1：`scripts/multitq/train_grpo_stage1_1p5b.sh`
 - GRPO 两步测试：`scripts/multitq/train_grpo_stage1_1p5b_smoke.sh`
+- 时序 KG 转换与只读核对：`scripts/data_process/convert_kg_to_jsonl.py`
 
 当前状态（2026-11-08）：正式 SFT 已完成，GRPO 两步测试通过；
 正式 GRPO Stage1 第一步反向传播显存不足，现按用户要求暂停，尚未完成。
@@ -117,10 +118,24 @@ We evaluate on three major TKGQA benchmark
 
 Please download the datasets and place them in the ```/data/MultiTQ/``` and ```/data/TimelineKGQA/```.
 ### (1) Prepare for TKGs
+现有 MultiTQ 语料包含时序字段。对已部署项目，先进行只读一致性核对：
 ```bash
-python scripts/convert_kg_to_jsonl.py
-bash search_r1/search/build_index.sh
+python scripts/data_process/convert_kg_to_jsonl.py --verify-against corpus/full_kg.jsonl
 ```
+
+转换器默认从项目根目录定位 `corpus/full.txt`，与执行时的工作目录无关；
+保留输入顺序、重复事实、关系下划线和日期，输出 `id/contents/subject/predicate/object/date`。
+空行、列数错误、空字段、无效日期或非法 UTF-8 会明确报错，不会静默跳过。
+
+需要生成新语料时，明确选择不存在的输出路径，例如：
+```bash
+python scripts/data_process/convert_kg_to_jsonl.py --output /tmp/tempr1-full-kg.candidate.jsonl
+```
+
+已有输出默认拒绝覆盖；只有完整转换成功后才发布新文件。
+若语料的行数、顺序或 `contents` 改变，必须在新目录重建对应索引，不能复用旧 embedding/FAISS。
+`search_r1/search/build_index.sh` 的默认目标是当前部署的 `corpus/kg_index`；本次修复和一致性核对不执行它。
+
 ### (2) Launch a local retrieval server.
 ```bash
 conda activate retriever
