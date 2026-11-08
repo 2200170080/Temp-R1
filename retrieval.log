@@ -84,3 +84,6 @@ INFO:     127.0.0.1:44244 - "POST /retrieve HTTP/1.1" 200 OK
 INFO:     127.0.0.1:38656 - "POST /retrieve HTTP/1.1" 200 OK
 INFO:     127.0.0.1:43988 - "POST /retrieve HTTP/1.1" 200 OK
 INFO:     127.0.0.1:34908 - "POST /retrieve HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54186 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:44576 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47892 - "GET /metrics HTTP/1.1" 404 Not Found
