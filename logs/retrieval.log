@@ -120,3 +120,4 @@ INFO:     127.0.0.1:41000 - "GET /v1/models HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:36470 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:41408 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:44286 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     10.233.84.206:38646 - "POST /retrieve HTTP/1.1" 200 OK
