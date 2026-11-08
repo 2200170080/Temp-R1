@@ -676,3 +676,4 @@ Parameter Offload: Total persistent parameters: 144896 in 141 params
 [INFO|trainer.py:2414] 2026-11-08 12:46:12,632 >>   Number of trainable parameters = 1,543,714,304
   0%|          | 0/100 [00:00<?, ?it/s]/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/utils/checkpoint.py:295: FutureWarning: `torch.cpu.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cpu', args...)` instead.
   with torch.enable_grad(), device_autocast_ctx, torch.cpu.amp.autocast(**ctx.cpu_autocast_kwargs):  # type: ignore[attr-defined]
+  1%|          | 1/100 [00:34<57:23, 34.79s/it]  2%|▏         | 2/100 [01:04<52:09, 31.93s/it]  3%|▎         | 3/100 [01:34<49:46, 30.78s/it]
