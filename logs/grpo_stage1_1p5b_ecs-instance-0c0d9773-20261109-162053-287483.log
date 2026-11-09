@@ -163,3 +163,17 @@ Trainer stop condition already fixed.
 [36m(main_task pid=290797)[0m              'total_training_steps': 80,
 [36m(main_task pid=290797)[0m              'val_before_train': False,
 [36m(main_task pid=290797)[0m              'val_only': False}}
+[36m(main_task pid=290797)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/vllm/connections.py:8: RuntimeWarning: Failed to read commit hash:
+[36m(main_task pid=290797)[0m No module named 'vllm._version'
+[36m(main_task pid=290797)[0m   from vllm.version import __version__ as VLLM_VERSION
+[36m(main_task pid=290797)[0m original dataset len: 103305
+[36m(main_task pid=290797)[0m filter dataset len: 103305
+[36m(main_task pid=290797)[0m filtered training dataset size: 103305
+[36m(main_task pid=290797)[0m original dataset len: 15720
+[36m(main_task pid=290797)[0m filter dataset len: 15720
+[36m(main_task pid=290797)[0m filtered validation dataset size: 24
+[36m(main_task pid=290797)[0m Size of train dataloader: 1721
+[36m(main_task pid=290797)[0m Size of val dataloader: 1
+[36m(main_task pid=290797)[0m Total training steps: 80
+[36m(main_task pid=290797)[0m Using LocalLogger is deprecated. The constructor API will change 
+[36m(bundle_reservation_check_func pid=291724)[0m [2026-11-09 16:26:17,662 E 291724 291782] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
