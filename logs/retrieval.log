@@ -129,3 +129,4 @@ INFO:     127.0.0.1:60858 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:58320 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:54630 - "GET /metrics HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:38874 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38834 - "GET /metrics HTTP/1.1" 404 Not Found
