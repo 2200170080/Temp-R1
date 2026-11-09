@@ -2,3 +2,6 @@
 实验：qwen1p5b-stage1-ecs-instance-0c0d9773-20261109-162053-287483
 训练日志：/root/user/cs_tcci_zengdexin/Temp-R1/logs/grpo_stage1_1p5b_ecs-instance-0c0d9773-20261109-162053-287483.log
 GPU：NVIDIA RTX A6000；总量 49140 MiB；空闲 43470 MiB（门槛 43000）
+已在当前节点启动检索服务，日志：/root/user/cs_tcci_zengdexin/Temp-R1/logs/retrieval_ecs-instance-0c0d9773-20261109-162053-287483.log
+等待本机检索就绪，最多 900 秒。最近状态：ConnectionError
+检索仍在等待，已用 31 秒。最近状态：ConnectionError
