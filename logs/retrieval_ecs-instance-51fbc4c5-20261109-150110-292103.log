@@ -6,3 +6,4 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ✓ Index successfully loaded to GPU
 INFO:     127.0.0.1:54800 - "POST /retrieve HTTP/1.1" 422 Unprocessable Entity
 INFO:     127.0.0.1:53020 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:42342 - "GET /metrics HTTP/1.1" 404 Not Found

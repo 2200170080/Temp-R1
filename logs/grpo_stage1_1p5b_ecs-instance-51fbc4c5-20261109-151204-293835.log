@@ -1,0 +1,4 @@
+节点：ecs-instance-51fbc4c5
+实验：qwen1p5b-stage1-ecs-instance-51fbc4c5-20261109-151204-293835
+训练日志：/root/user/cs_tcci_zengdexin/Temp-R1/logs/grpo_stage1_1p5b_ecs-instance-51fbc4c5-20261109-151204-293835.log
+GPU：NVIDIA RTX A6000；总量 49140 MiB；空闲 41267 MiB（门槛 39500）

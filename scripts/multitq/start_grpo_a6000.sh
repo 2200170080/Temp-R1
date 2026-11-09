@@ -64,7 +64,11 @@ if [[ "${1:-}" != --worker ]]; then
         fail "本机 tmux 会话 $SESSION 已存在；请勿重复启动。"
     fi
     check_training
-    check_gpu
+    _parent_minfree=43000
+    if tmux has-session -t "=$RETRIEVAL_SESSION" 2>/dev/null; then
+        _parent_minfree="${MIN_FREE_WITH_RETRIEVAL:-39500}"
+    fi
+    check_gpu "$_parent_minfree"
     NODE="$(hostname)"
     NODE="${NODE//[^a-zA-Z0-9._-]/_}"
     RUN_TAG="$NODE-$(date +%Y%m%d-%H%M%S)-$$"
