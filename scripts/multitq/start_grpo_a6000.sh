@@ -14,6 +14,8 @@ RETRIEVAL_SESSION=tempr1-retrieval
 fail() { printf '停止：%s\n' "$*" >&2; exit 1; }
 
 check_gpu() {
+    # 可选门槛：启动前默认 43000；检索服务占住显存之后用更低的门槛二次校验。
+    local minfree="${1:-43000}"
     local name total free
     IFS=, read -r name total free < <(
         nvidia-smi -i 0 --query-gpu=name,memory.total,memory.free --format=csv,noheader,nounits
@@ -22,8 +24,8 @@ check_gpu() {
     free="${free//[[:space:]]/}"
     [[ "$total" =~ ^[0-9]+$ && "$free" =~ ^[0-9]+$ ]] || fail "显存查询结果无效。"
     [[ "$name" == *A6000* ]] && (( total >= 46000 )) || fail "当前 GPU 0 不是 48GB A6000：$name。"
-    (( free >= 43000 )) || fail "GPU 0 空闲显存只有 $free MiB，需要至少 43000 MiB；请先手动释放自己的占用。"
-    printf 'GPU：%s；总量 %s MiB；空闲 %s MiB\n' "$name" "$total" "$free"
+    (( free >= minfree )) || fail "GPU 0 空闲显存只有 $free MiB，需要至少 $minfree MiB；请先手动释放自己的占用。"
+    printf 'GPU：%s；总量 %s MiB；空闲 %s MiB（门槛 %s）\n' "$name" "$total" "$free" "$minfree"
 }
 
 check_training() {
@@ -158,7 +160,9 @@ print("LOCAL_RETRIEVAL_OK：" + url, flush=True)
 PY
 
     check_training
-    check_gpu
+    # 检索服务已在本机 GPU 上占了约 3.5 GiB，二次校验用更低门槛（仍留 9 GiB 余量），
+    # 否则本脚本永远无法在同一张卡上完成“起检索 + 起训练”。
+    check_gpu "${MIN_FREE_AFTER_RETRIEVAL:-39500}"
     printf '检索已就绪，开始 GRPO Stage1。\n'
     sed \
         -e "s#^EXPERIMENT_NAME=.*#EXPERIMENT_NAME=\"$EXPERIMENT_NAME\"#" \
