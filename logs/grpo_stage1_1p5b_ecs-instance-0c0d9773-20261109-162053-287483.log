@@ -249,3 +249,11 @@ Trainer stop condition already fixed.
 [36m(WorkerDict pid=291864)[0m   "vocab_size": 151936
 [36m(WorkerDict pid=291864)[0m }
 [36m(WorkerDict pid=291864)[0m 
+[36m(WorkerDict pid=291864)[0m Flash Attention 2.0 only supports torch.float16 and torch.bfloat16 dtypes, but the current dype in Qwen2ForCausalLM is torch.float32. You should run training or inference using Automatic Mixed-Precision via the `with torch.autocast(device_type='torch_device'):` decorator, or load the model with the `torch_dtype` argument. Example: `model = AutoModel.from_pretrained("openai/whisper-tiny", attn_implementation="flash_attention_2", torch_dtype=torch.float16)`
+[36m(WorkerDict pid=291864)[0m Qwen2ForCausalLM contains 1.54B parameters
+[36m(WorkerDict pid=291864)[0m wrap_policy: functools.partial(<function _or_policy at 0x7fe25cda0430>, policies=[functools.partial(<function transformer_auto_wrap_policy at 0x7fe25cda0310>, transformer_layer_cls={<class 'transformers.models.qwen2.modeling_qwen2.Qwen2DecoderLayer'>})])
+[36m(WorkerDict pid=291864)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/_init_utils.py:440: UserWarning: FSDP is switching to use `NO_SHARD` instead of ShardingStrategy.FULL_SHARD since the world size is 1.
+[36m(WorkerDict pid=291864)[0m   warnings.warn(
+[36m(WorkerDict pid=291864)[0m Total steps: 80, num_warmup_steps: 0
+[36m(WorkerDict pid=291864)[0m Actor use_remove_padding=False
+[36m(WorkerDict pid=291864)[0m Before building vllm rollout, memory allocated (GB): 8.64726972579956, memory reserved (GB): 8.69140625
