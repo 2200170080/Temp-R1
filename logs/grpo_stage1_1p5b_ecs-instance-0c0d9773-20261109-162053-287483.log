@@ -257,3 +257,6 @@ Trainer stop condition already fixed.
 [36m(WorkerDict pid=291864)[0m Total steps: 80, num_warmup_steps: 0
 [36m(WorkerDict pid=291864)[0m Actor use_remove_padding=False
 [36m(WorkerDict pid=291864)[0m Before building vllm rollout, memory allocated (GB): 8.64726972579956, memory reserved (GB): 8.69140625
+[36m(WorkerDict pid=291864)[0m WARNING 11-09 16:29:56 config.py:380] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+[36m(WorkerDict pid=291864)[0m local rank 0
+[36m(WorkerDict pid=291864)[0m INFO 11-09 16:29:57 selector.py:115] Using XFormers backend.
