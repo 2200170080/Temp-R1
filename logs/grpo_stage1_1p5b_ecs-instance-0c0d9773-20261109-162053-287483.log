@@ -260,3 +260,68 @@ Trainer stop condition already fixed.
 [36m(WorkerDict pid=291864)[0m WARNING 11-09 16:29:56 config.py:380] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
 [36m(WorkerDict pid=291864)[0m local rank 0
 [36m(WorkerDict pid=291864)[0m INFO 11-09 16:29:57 selector.py:115] Using XFormers backend.
+[36m(WorkerDict pid=291864)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/xformers/ops/fmha/flash.py:211: FutureWarning: `torch.library.impl_abstract` was renamed to `torch.library.register_fake`. Please use that instead; we will remove `torch.library.impl_abstract` in a future version of PyTorch.
+[36m(WorkerDict pid=291864)[0m   @torch.library.impl_abstract("xformers_flash::flash_fwd")
+[36m(WorkerDict pid=291864)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/xformers/ops/fmha/flash.py:344: FutureWarning: `torch.library.impl_abstract` was renamed to `torch.library.register_fake`. Please use that instead; we will remove `torch.library.impl_abstract` in a future version of PyTorch.
+[36m(WorkerDict pid=291864)[0m   @torch.library.impl_abstract("xformers_flash::flash_bwd")
+[36m(WorkerDict pid=291864)[0m no hf weight loader need to be updated
+[36m(WorkerDict pid=291864)[0m INFO 11-09 16:30:06 selector.py:115] Using XFormers backend.
+[36m(WorkerDict pid=291864)[0m before init cache memory allocated: 12.39386368GB, reserved: 12.580814848GB
+[36m(WorkerDict pid=291864)[0m after init cache memory allocated: 23.554841088GB, reserved: 23.796383744GB
+[36m(WorkerDict pid=291864)[0m kwargs: {'n': 1, 'logprobs': 1, 'max_tokens': 1000, 'detokenize': False, 'temperature': 1.0, 'top_k': -1, 'top_p': 0.95, 'ignore_eos': False}
+[36m(WorkerDict pid=291864)[0m After building vllm rollout, memory allocated (GB): 19.057490825653076, memory reserved (GB): 22.162109375
+[36m(WorkerDict pid=291864)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:689: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[36m(WorkerDict pid=291864)[0m   warnings.warn(
+[36m(WorkerDict pid=291864)[0m After building sharding manager, memory allocated (GB): 19.057490825653076, memory reserved (GB): 22.162109375
+[36m(main_task pid=290797)[0m epoch 0, step 1
+Error executing job with overrides: ['data.train_files=data/multitq_search2/train_multiple.parquet', 'data.val_files=data/multitq_search2/test_multiple.parquet', 'data.train_data_num=null', 'data.val_data_num=24', 'data.train_batch_size=60', 'data.val_batch_size=24', 'data.max_prompt_length=5200', 'data.max_response_length=1000', 'data.max_start_length=2000', 'data.max_obs_length=1400', 'data.shuffle_train_dataloader=True', 'algorithm.adv_estimator=grpo', 'actor_rollout_ref.model.path=/root/user/cs_tcci_zengdexin/Temp-R1/LLaMA-Factory/saves/qwen2.5-1.5b-it/full/sft', 'actor_rollout_ref.model.enable_gradient_checkpointing=true', 'actor_rollout_ref.model.use_remove_padding=False', 'actor_rollout_ref.actor.optim.lr=5e-7', 'actor_rollout_ref.actor.grad_clip=5.0', 'actor_rollout_ref.actor.optim.lr_warmup_steps_ratio=0.0', 'actor_rollout_ref.actor.use_kl_loss=true', 'actor_rollout_ref.actor.kl_loss_coef=0.01', 'actor_rollout_ref.actor.kl_loss_type=low_var_kl', 'actor_rollout_ref.actor.ppo_mini_batch_size=30', 'actor_rollout_ref.actor.ppo_micro_batch_size=1', 'actor_rollout_ref.actor.fsdp_config.param_offload=True', 'actor_rollout_ref.actor.fsdp_config.grad_offload=True', 'actor_rollout_ref.actor.fsdp_config.optimizer_offload=True', 'actor_rollout_ref.rollout.log_prob_micro_batch_size=1', 'actor_rollout_ref.rollout.tensor_model_parallel_size=1', 'actor_rollout_ref.rollout.load_format=dummy_hf', 'actor_rollout_ref.rollout.name=vllm', 'actor_rollout_ref.rollout.gpu_memory_utilization=0.4', 'actor_rollout_ref.ref.log_prob_micro_batch_size=1', 'actor_rollout_ref.ref.fsdp_config.param_offload=True', 'actor_rollout_ref.rollout.n_agent=5', 'actor_rollout_ref.rollout.temperature=1.0', 'actor_rollout_ref.actor.state_masking=true', 'algorithm.no_think_rl=false', 'trainer.logger=[console]', '+trainer.val_only=false', '+trainer.val_before_train=false', 'trainer.default_hdfs_dir=null', 'trainer.n_gpus_per_node=1', 'trainer.nnodes=1', 'trainer.save_freq=10', 'trainer.test_freq=10', 'trainer.project_name=TempR1-Qwen15B', 'trainer.experiment_name=qwen1p5b-stage1-ecs-instance-0c0d9773-20261109-162053-287483', 'trainer.total_epochs=5', 'trainer.total_training_steps=80', 'trainer.default_local_dir=verl_checkpoints/qwen1p5b-stage1-ecs-instance-0c0d9773-20261109-162053-287483', 'max_turns=3', 'retriever.url=http://127.0.0.1:8000/retrieve', 'retriever.topk=30']
+Traceback (most recent call last):
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/root/user/cs_tcci_zengdexin/Temp-R1/verl/trainer/main_ppo_format.py", line 212, in <module>
+    main()
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/_internal/utils.py", line 223, in run_and_report
+    raise ex
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/_internal/hydra.py", line 132, in run
+    _ = ret.return_value
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/core/utils.py", line 263, in return_value
+    raise self._return_value
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/hydra/core/utils.py", line 189, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "/root/user/cs_tcci_zengdexin/Temp-R1/verl/trainer/main_ppo_format.py", line 117, in main
+    ray.get(main_task.remote(config))
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/ray/_private/auto_init_hook.py", line 22, in auto_init_wrapper
+    return fn(*args, **kwargs)
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/ray/_private/client_mode_hook.py", line 104, in wrapper
+    return func(*args, **kwargs)
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/ray/_private/worker.py", line 2961, in get
+    values, debugger_breakpoint = worker.get_objects(
+  File "/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/ray/_private/worker.py", line 1028, in get_objects
+    raise value
+ray.exceptions.OutOfMemoryError: Task was killed due to the node running low on memory.
+Memory on the node (IP: 10.233.117.25, ID: 9d52da08d113b39a56300668b2c4b35855062793f27d1f406b6de8cc) where the lease (actor ID: NIL_IDlease ID: 0000000001000000ffffffffffffffffffffffffffffffffffffffffffffffff, name=main_task, pid=290797, memory used=3.84GB) was running was 85.56GB / 90.00GB (0.950613), which exceeds the memory usage threshold of 0.95. Ray killed this worker (ID: ecd32ac38ae3ef1aed6170f882b91f78b52d99efbcedd5c3e37979df) because it was the most recently scheduled task; to see more information about memory usage on this node, use `ray logs raylet.out -ip 10.233.117.25`. To see the logs of the worker, use `ray logs worker-ecd32ac38ae3ef1aed6170f882b91f78b52d99efbcedd5c3e37979df*out -ip 10.233.117.25. Top 10 memory users:
+PID	MEM(GB)	COMMAND
+291864	12.67	ray::WorkerDict
+290797	3.84	ray::main_task
+287747	1.04	/root/user/cs_tcci_zengdexin/miniconda3/envs/retriever/bin/python search_r1/search/retrieval_server....
+289265	0.74	/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/ray/core/src/ray/gcs...
+288699	0.35	python -m verl.trainer.main_ppo_format hydra.run.dir=logs/grpo_runs/qwen1p5b-stage1-ecs-instance-0c0...
+289532	0.06	/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/bin/python /root/user/cs_tcci_zengdexin/minicond...
+289755	0.06	/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/bin/python -u /root/user/cs_tcci_zengdexin/minic...
+292511	0.05	ray::WorkerGroupRegisterCenter
+289475	0.04	/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/bin/python -u /root/user/cs_tcci_zengdexin/minic...
+289664	0.04	/root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/bin/python -u /root/user/cs_tcci_zengdexin/minic...
+Refer to the documentation on how to address the out of memory issue: https://docs.ray.io/en/latest/ray-core/scheduling/ray-oom-prevention.html. Consider provisioning more memory on this node or reducing task parallelism by requesting more CPUs per task. To adjust the kill threshold, set the environment variable `RAY_memory_usage_threshold` when starting Ray. To disable worker killing, set the environment variable `RAY_memory_monitor_refresh_ms` to zero.
+GRPO_RUN_EXIT stage=training exit_code=1 time=2026-11-09T16:30:31+08:00
