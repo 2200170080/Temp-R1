@@ -1,0 +1,7 @@
+INFO:     Started server process [287747]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+🔄 Loading index to GPU with optimized memory settings...
+✓ Index successfully loaded to GPU
+INFO:     127.0.0.1:46936 - "POST /retrieve HTTP/1.1" 200 OK
