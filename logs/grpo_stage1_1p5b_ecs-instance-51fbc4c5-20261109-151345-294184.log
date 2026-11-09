@@ -6,3 +6,4 @@ GPU：NVIDIA RTX A6000；总量 49140 MiB；空闲 41381 MiB（门槛 39500）
 LOCAL_RETRIEVAL_OK：http://127.0.0.1:8000/retrieve
 GPU：NVIDIA RTX A6000；总量 49140 MiB；空闲 41381 MiB（门槛 39500）
 检索已就绪，开始 GRPO Stage1。
+Trainer stop condition already fixed.
