@@ -1,0 +1,8 @@
+节点：ecs-instance-51fbc4c5
+实验：qwen1p5b-stage1-ecs-instance-51fbc4c5-20261109-151345-294184
+训练日志：/root/user/cs_tcci_zengdexin/Temp-R1/logs/grpo_stage1_1p5b_ecs-instance-51fbc4c5-20261109-151345-294184.log
+GPU：NVIDIA RTX A6000；总量 49140 MiB；空闲 41381 MiB（门槛 39500）
+复用当前节点已有的检索服务。
+LOCAL_RETRIEVAL_OK：http://127.0.0.1:8000/retrieve
+GPU：NVIDIA RTX A6000；总量 49140 MiB；空闲 41381 MiB（门槛 39500）
+检索已就绪，开始 GRPO Stage1。
