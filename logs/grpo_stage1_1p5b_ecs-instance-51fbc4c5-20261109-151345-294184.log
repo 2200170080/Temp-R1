@@ -180,3 +180,6 @@ The last 20 lines of /tmp/ray/session_2026-11-09_15-22-15_899817_294393/logs/das
 [36m(main_task pid=296752)[0m              'total_training_steps': 80,
 [36m(main_task pid=296752)[0m              'val_before_train': False,
 [36m(main_task pid=296752)[0m              'val_only': False}}
+[36m(main_task pid=296752)[0m /root/user/cs_tcci_zengdexin/miniconda3/envs/tempr1/lib/python3.9/site-packages/vllm/connections.py:8: RuntimeWarning: Failed to read commit hash:
+[36m(main_task pid=296752)[0m No module named 'vllm._version'
+[36m(main_task pid=296752)[0m   from vllm.version import __version__ as VLLM_VERSION
