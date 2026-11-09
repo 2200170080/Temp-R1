@@ -88,7 +88,12 @@ EXPERIMENT_NAME="qwen1p5b-stage1-$RUN_TAG"
 worker_main() {
     printf '节点：%s\n实验：%s\n训练日志：%s\n' "$(hostname)" "$EXPERIMENT_NAME" "$RUN_LOG"
     check_training
-    check_gpu
+    # 本机检索服务若已在跑（占 3~3.5 GiB），门槛要相应下调，否则永远过不了这一关。
+    _minfree=43000
+    if tmux has-session -t "=$RETRIEVAL_SESSION" 2>/dev/null; then
+        _minfree="${MIN_FREE_WITH_RETRIEVAL:-39500}"
+    fi
+    check_gpu "$_minfree"
 
     "$PY" - "$ROOT" "$RETRIEVAL_SESSION" "$RETRIEVAL_LOG" <<'PY'
 import errno
