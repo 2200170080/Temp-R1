@@ -10,6 +10,7 @@ TRAIN="$ROOT/scripts/multitq/train_grpo_stage1_1p5b.sh"
 PY="$HOME/miniconda3/envs/tempr1/bin/python"
 SESSION=grpo-stage1-a6000
 RETRIEVAL_SESSION=tempr1-retrieval
+RETRIEVAL_READY_TIMEOUT="${TEMPR1_RETRIEVAL_READY_TIMEOUT:-900}"
 
 fail() { printf '停止：%s\n' "$*" >&2; exit 1; }
 
@@ -17,6 +18,7 @@ check_gpu() {
     # 可选门槛：启动前默认 43000；检索服务占住显存之后用更低的门槛二次校验。
     local minfree="${1:-43000}"
     local name total free
+    [[ "$minfree" =~ ^[1-9][0-9]{0,5}$ ]] || fail "显存门槛必须为有效的正整数 MiB：$minfree"
     IFS=, read -r name total free < <(
         nvidia-smi -i 0 --query-gpu=name,memory.total,memory.free --format=csv,noheader,nounits
     ) || fail "无法读取 GPU 0。"
@@ -57,9 +59,10 @@ check_inputs() {
 }
 
 cd -- "$ROOT" || fail "无法进入项目：$ROOT。"
-check_inputs
 
 if [[ "${1:-}" != --worker ]]; then
+    check_inputs
+    [[ "$RETRIEVAL_READY_TIMEOUT" =~ ^[1-9][0-9]{0,4}$ ]] || fail "检索就绪超时必须为正整数秒。"
     if tmux has-session -t "=$SESSION" 2>/dev/null; then
         fail "本机 tmux 会话 $SESSION 已存在；请勿重复启动。"
     fi
@@ -77,6 +80,9 @@ if [[ "${1:-}" != --worker ]]; then
     tmux new-session -d -s "$SESSION" -c "$ROOT" \
         /usr/bin/env PATH="$PATH" PYTHONPATH="${PYTHONPATH:-}" LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}" \
         NO_PROXY="$BYPASS" no_proxy="$BYPASS" TEMPR1_RUN_TAG="$RUN_TAG" \
+        TEMPR1_RETRIEVAL_READY_TIMEOUT="$RETRIEVAL_READY_TIMEOUT" \
+        MIN_FREE_WITH_RETRIEVAL="${MIN_FREE_WITH_RETRIEVAL:-39500}" \
+        MIN_FREE_AFTER_RETRIEVAL="${MIN_FREE_AFTER_RETRIEVAL:-39500}" \
         /bin/bash "$SELF" --worker
     printf '已提交到本机 tmux：%s\n日志：%s/logs/grpo_stage1_1p5b_%s.log\n' "$SESSION" "$ROOT" "$RUN_TAG"
     printf "查看：tmux capture-pane -p -t '=%s:' -S -60\n" "$SESSION"
@@ -89,17 +95,27 @@ RUN_LOG="$ROOT/logs/grpo_stage1_1p5b_$RUN_TAG.log"
 RETRIEVAL_LOG="$ROOT/logs/retrieval_$RUN_TAG.log"
 EXPERIMENT_NAME="qwen1p5b-stage1-$RUN_TAG"
 
+record_worker_exit() {
+    local status="$1"
+    printf 'GRPO_RUN_EXIT stage=%s exit_code=%s time=%s\n' "$run_stage" "$status" "$(date -Is)"
+    exit "$status"
+}
+
 worker_main() {
+    run_stage=preflight
+    trap 'record_worker_exit "$?"' EXIT
     printf '节点：%s\n实验：%s\n训练日志：%s\n' "$(hostname)" "$EXPERIMENT_NAME" "$RUN_LOG"
+    check_inputs
     check_training
-    # 本机检索服务若已在跑（占 3~3.5 GiB），门槛要相应下调，否则永远过不了这一关。
+    # 已有本项目的检索会话时，按检索占用后的显存门槛检查。
     _minfree=43000
     if tmux has-session -t "=$RETRIEVAL_SESSION" 2>/dev/null; then
         _minfree="${MIN_FREE_WITH_RETRIEVAL:-39500}"
     fi
     check_gpu "$_minfree"
 
-    "$PY" - "$ROOT" "$RETRIEVAL_SESSION" "$RETRIEVAL_LOG" <<'PY'
+    run_stage=retrieval
+    "$PY" - "$ROOT" "$RETRIEVAL_SESSION" "$RETRIEVAL_LOG" "$RETRIEVAL_READY_TIMEOUT" <<'PY'
 import errno
 import math
 import os
@@ -111,67 +127,115 @@ import time
 
 import requests
 
-root, session, logfile = sys.argv[1:]
+root, session, logfile, timeout = sys.argv[1:]
+ready_seconds = int(timeout)
 url = "http://127.0.0.1:8000/retrieve"
 client = requests.Session()
 client.trust_env = False
 
 
-def probe():
-    response = client.post(url, json={"queries": ["China"], "topk": 1, "return_scores": True}, timeout=(2, 15))
+def probe(remaining):
+    response = client.post(
+        url,
+        json={"queries": ["China"], "topk": 1, "return_scores": True},
+        timeout=(min(2, remaining / 2), min(15, remaining / 2)),
+    )
     response.raise_for_status()
-    hit = response.json()["result"][0][0]
-    document = hit["document"]
-    if document["id"] != "101702" or document["contents"] != "Peter_Pace Make_a_visit China on 2007-03-22" or not math.isfinite(float(hit["score"])):
-        raise SystemExit("本机 8000 的检索内容不符，未启动训练。")
+    try:
+        hit = response.json()["result"][0][0]
+        document = hit["document"]
+        valid = (
+            document["id"] == "101702"
+            and document["contents"] == "Peter_Pace Make_a_visit China on 2007-03-22"
+            and math.isfinite(float(hit["score"]))
+        )
+    except (KeyError, IndexError, TypeError, ValueError, OverflowError):
+        valid = False
+    if not valid:
+        raise SystemExit("本机 8000 的检索响应与项目数据契约不符，未启动训练。")
 
 
-try:
-    probe()
-except requests.ConnectionError:
-    with socket.socket() as sock:
-        sock.settimeout(2)
-        port_status = sock.connect_ex(("127.0.0.1", 8000))
-        if port_status == 0:
-            raise SystemExit("本机 8000 已被服务占用，但检索接口不可用；未启动其他服务。")
-        if port_status != errno.ECONNREFUSED:
-            raise SystemExit("无法确认本机 8000 端口空闲（错误码 " + str(port_status) + "），未启动其他服务。")
-    exists = subprocess.run(["tmux", "has-session", "-t", "=" + session], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
-    if exists:
-        print("本机检索会话已存在，等待它就绪。", flush=True)
+def session_exists():
+    result = subprocess.run(
+        ["tmux", "has-session", "-t", "=" + session],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
+
+
+def start_retriever():
+    command = [
+        "tmux", "new-session", "-d", "-s", session, "-c", root,
+        "/usr/bin/env", "PATH=" + os.environ["PATH"],
+        "PYTHONPATH=" + os.environ.get("PYTHONPATH", ""),
+        "LD_LIBRARY_PATH=" + os.environ.get("LD_LIBRARY_PATH", ""),
+        "NO_PROXY=" + os.environ.get("NO_PROXY", ""),
+        "no_proxy=" + os.environ.get("no_proxy", ""),
+        "/bin/bash", "-c", 'set -eo pipefail; exec /bin/bash "$1" >>"$2" 2>&1',
+        "bash", str(Path(root) / "scripts/retrieval/retrieval_launch.sh"), logfile,
+    ]
+    subprocess.run(command, check=True)
+    print("已在当前节点启动检索服务，日志：" + logfile, flush=True)
+
+
+started = time.monotonic()
+deadline = started + ready_seconds
+next_report = started + 30
+first_attempt = True
+watch_session = False
+started_here = False
+last_error = "尚未收到响应"
+
+while True:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        detail = "检索日志：" + logfile if started_here else "请查看本机 8000 服务的日志。"
+        raise SystemExit(f"{ready_seconds} 秒内检索未就绪。最近状态：{last_error}。{detail}")
+    try:
+        probe(remaining)
+    except (requests.ConnectionError, requests.Timeout) as error:
+        last_error = type(error).__name__
+        if first_attempt:
+            first_attempt = False
+            watch_session = session_exists()
+            # A read/connect timeout can come from a running service. Only start
+            # a new one after an explicit connection refusal and no local session.
+            if not watch_session and isinstance(error, requests.ConnectionError) and not isinstance(error, requests.Timeout):
+                with socket.socket() as sock:
+                    sock.settimeout(2)
+                    port_status = sock.connect_ex(("127.0.0.1", 8000))
+                if port_status == errno.ECONNREFUSED:
+                    start_retriever()
+                    watch_session = True
+                    started_here = True
+                elif port_status == 0:
+                    raise SystemExit("本机 8000 已监听，但检索连接异常。请检查该服务日志。")
+                else:
+                    raise SystemExit(f"无法确认本机 8000 的状态（错误码 {port_status}）。")
+            print(f"等待本机检索就绪，最多 {ready_seconds} 秒。最近状态：{last_error}", flush=True)
+        elif watch_session and not session_exists():
+            detail = "日志：" + logfile if started_here else "请检查原检索服务日志。"
+            raise SystemExit("检索会话已退出。" + detail)
+
+        now = time.monotonic()
+        if now >= next_report:
+            print(f"检索仍在等待，已用 {now - started:.0f} 秒。最近状态：{last_error}", flush=True)
+            next_report = now + 30
+        if now < deadline:
+            time.sleep(min(2, deadline - now))
     else:
-        command = [
-            "tmux", "new-session", "-d", "-s", session, "-c", root,
-            "/usr/bin/env", "PATH=" + os.environ["PATH"],
-            "PYTHONPATH=" + os.environ.get("PYTHONPATH", ""), "LD_LIBRARY_PATH=" + os.environ.get("LD_LIBRARY_PATH", ""),
-            "NO_PROXY=" + os.environ.get("NO_PROXY", ""), "no_proxy=" + os.environ.get("no_proxy", ""),
-            "/bin/bash", "-c", 'set -eo pipefail; exec /bin/bash "$1" >>"$2" 2>&1',
-            "bash", str(Path(root) / "scripts/retrieval/retrieval_launch.sh"), logfile,
-        ]
-        subprocess.run(command, check=True)
-        print("已在当前节点启动检索服务，日志：" + logfile, flush=True)
-    deadline = time.monotonic() + 180
-    while time.monotonic() < deadline:
-        try:
-            probe()
-            break
-        except requests.ConnectionError:
-            status = subprocess.run(["tmux", "has-session", "-t", "=" + session], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            if status.returncode != 0:
-                raise SystemExit("检索启动会话已退出，请查看检索日志：" + logfile)
-            time.sleep(2)
-    else:
-        raise SystemExit("180 秒内检索未就绪，未启动训练；本机检索会话保留供检查。")
-else:
-    print("复用当前节点已有的检索服务。", flush=True)
-
-print("LOCAL_RETRIEVAL_OK：" + url, flush=True)
+        if first_attempt:
+            print("复用当前节点已有的检索服务。", flush=True)
+        print("LOCAL_RETRIEVAL_OK：" + url, flush=True)
+        break
 PY
 
+    run_stage=gpu_recheck
     check_training
-    # 检索服务已在本机 GPU 上占了约 3.5 GiB，二次校验用更低门槛（仍留 9 GiB 余量），
-    # 否则本脚本永远无法在同一张卡上完成“起检索 + 起训练”。
     check_gpu "${MIN_FREE_AFTER_RETRIEVAL:-39500}"
+    run_stage=training
+    export HYDRA_FULL_ERROR=1
     printf '检索已就绪，开始 GRPO Stage1。\n'
     sed \
         -e "s#^EXPERIMENT_NAME=.*#EXPERIMENT_NAME=\"$EXPERIMENT_NAME\"#" \
